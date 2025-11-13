@@ -181,7 +181,7 @@ public class ConvertStep2Comment {
 
     /**
      * 주석 내 백틱(`) 제거
-     * - 라인 주석(--) 및 블록 주석(/* */) 내부의 백틱만 제거
+     * - 라인 주석(--) 및 블록 주석() 내부의 백틱만 제거
      * - 문자열 리터럴과 코드/식별자의 백틱은 보존
      */
     private static String removeBackticksInComments(String sql) {
