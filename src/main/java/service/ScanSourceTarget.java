@@ -1,7 +1,7 @@
 package service;
 
-import service.scan.SqlFileProcessor;
-import service.scan.SqlFileScanner;
+import service.scan.processor.SqlFileProcessor;
+import service.scan.processor.SqlFileScanner;
 
 import java.nio.file.*;
 
