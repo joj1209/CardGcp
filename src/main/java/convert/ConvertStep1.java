@@ -1,5 +1,6 @@
 package com.cardgcp;
 
+import common.log.SimpleAppLogger;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -17,6 +18,8 @@ import java.nio.file.attribute.BasicFileAttributes;
  */
 public class ConvertStep1 {
 
+    private static final SimpleAppLogger log = SimpleAppLogger.getLogger(ConvertStep1.class);
+
     // ========== 설정 (여기서 경로 변경) ==========
     private static final Path SRC_ROOT = Paths.get("D:\\11. Project\\11. DB");
     private static final Path OUT_ROOT = Paths.get("D:\\11. Project\\11. DB_OUT");
@@ -24,13 +27,18 @@ public class ConvertStep1 {
     private static final String TARGET_EXT = ".sql";
 
     public static void main(String[] args) throws Exception {
+        log.start("SQL 파일 변환 (주석 백틱 제거)");
+
         if (!Files.isDirectory(SRC_ROOT)) {
+            log.error("입력 폴더가 없습니다: %s", SRC_ROOT);
             throw new IllegalArgumentException("입력 폴더가 없습니다: " + SRC_ROOT);
         }
+
         Files.createDirectories(OUT_ROOT);
 
-        System.out.println("[시작] SRC=" + SRC_ROOT.toAbsolutePath());
-        System.out.println("       OUT=" + OUT_ROOT.toAbsolutePath());
+        log.info("입력 폴더: %s", SRC_ROOT.toAbsolutePath());
+        log.info("출력 폴더: %s", OUT_ROOT.toAbsolutePath());
+        log.info("문자셋: %s", CHARSET.name());
 
         final int[] count = {0};
         Files.walkFileTree(SRC_ROOT, new SimpleFileVisitor<>() {
@@ -43,11 +51,13 @@ public class ConvertStep1 {
             }
         });
 
-        System.out.println("[완료] 변환 파일 수: " + count[0] + "개");
+        log.end("SQL 파일 변환", count[0]);
     }
 
     private static void processFile(Path file, int[] count) {
         try {
+            log.fileStart(file.getFileName().toString());
+
             Path outputFile = OUT_ROOT.resolve(SRC_ROOT.relativize(file));
             Files.createDirectories(outputFile.getParent());
 
@@ -56,8 +66,13 @@ public class ConvertStep1 {
             writeFile(outputFile, converted);
 
             count[0]++;
+            log.fileEnd(file.getFileName().toString(), 1);
+
+            if (count[0] % 10 == 0) {
+                log.info("처리 중... (%d개 파일)", count[0]);
+            }
         } catch (IOException e) {
-            System.err.println("파일 처리 실패: " + file.getFileName() + " - " + e.getMessage());
+            log.fileError(file.getFileName().toString(), e);
         }
     }
 

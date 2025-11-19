@@ -1,5 +1,6 @@
 package convert;
 
+import common.log.SimpleAppLogger;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -19,6 +20,8 @@ import java.util.regex.Pattern;
  */
 public class SimpleSourceTarget {
 
+    private static final SimpleAppLogger log = SimpleAppLogger.getLogger(SimpleSourceTarget.class);
+
     // 설정: 필요 시 경로를 수정하세요
     private static final Path SRC_ROOT = Paths.get("D:\\11. Project\\11. DB");
     private static final Path OUT_ROOT = Paths.get("D:\\11. Project\\11. DB_OUT3");
@@ -37,28 +40,42 @@ public class SimpleSourceTarget {
     private static final Pattern P_JOIN  = Pattern.compile("(?is)\\bJOIN\\s+(" + TABLE + ")");
 
     public static void main(String[] args) throws Exception {
+        log.start("Source/Target 테이블 추출");
+
         if (!Files.isDirectory(SRC_ROOT)) {
-            System.err.println("입력 폴더가 존재하지 않습니다: " + SRC_ROOT.toAbsolutePath());
+            log.error("입력 폴더가 존재하지 않습니다: %s", SRC_ROOT.toAbsolutePath());
             return;
         }
+
+        log.info("입력 폴더: %s", SRC_ROOT.toAbsolutePath());
+        log.info("출력 폴더: %s", OUT_ROOT.toAbsolutePath());
+
         Files.createDirectories(OUT_ROOT);
 
         final int[] count = {0};
+        log.sqlScanStart(SRC_ROOT.toString());
+
         Files.walkFileTree(SRC_ROOT, new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                 if (file.getFileName().toString().toLowerCase().endsWith(".sql")) {
                     scanFile(file);
                     count[0]++;
+                    if (count[0] % 10 == 0) {
+                        log.info("처리 중... (%d개 파일)", count[0]);
+                    }
                 }
                 return FileVisitResult.CONTINUE;
             }
         });
 
-        System.out.println("\n[완료] 스캔한 SQL 파일 수: " + count[0]);
+        log.sqlScanEnd(count[0]);
+        log.end("Source/Target 테이블 추출", count[0]);
     }
 
     private static void scanFile(Path sqlFile) throws IOException {
+        log.fileStart(sqlFile.getFileName().toString());
+
         String raw = new String(Files.readAllBytes(sqlFile), INPUT_CHARSET);
         String sql = stripComments(raw); // 주석 제거 (백틱은 제거하지 않음)
 
@@ -72,6 +89,9 @@ public class SimpleSourceTarget {
 
         find(sql, P_FROM, sources);
         find(sql, P_JOIN, sources);
+
+        // 로그 출력
+        log.tableExtracted(sqlFile.getFileName().toString(), sources.size(), targets.size());
 
         // 리포트 생성
         StringBuilder report = new StringBuilder();
@@ -102,8 +122,7 @@ public class SimpleSourceTarget {
         if (outParent != null) Files.createDirectories(outParent);
         Files.write(outFile, report.toString().getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 
-        // 콘솔 출력
-        System.out.println(report.toString());
+        log.debug("결과 파일 저장: %s", outFile.getFileName());
     }
 
     private static void find(String sql, Pattern p, Set<String> out) {

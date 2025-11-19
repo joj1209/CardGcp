@@ -1,5 +1,6 @@
 package convert;
 
+import common.log.SimpleAppLogger;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -18,6 +19,8 @@ import java.util.*;
  * - UTF-8 변환 또는 주석 내 백틱 제거 선택 가능
  */
 public class ConvertStep2Comment {
+
+    private static final SimpleAppLogger log = SimpleAppLogger.getLogger(ConvertStep2Comment.class);
 
     // 입력 폴더 루트 (재귀 탐색 대상)
     private static final Path SRC_ROOT = Paths.get("D:\\11. Project\\11. DB");
@@ -39,8 +42,11 @@ public class ConvertStep2Comment {
 
     public static void main(String[] args) throws Exception {
 
+        log.start("SQL 파일 변환 (다중 옵션 - 상세 주석)");
+
         // 입력/출력 폴더 점검 및 생성
         if (!Files.isDirectory(SRC_ROOT)) {
+            log.error("입력 폴더가 없습니다: %s", SRC_ROOT.toAbsolutePath());
             throw new IllegalArgumentException("입력 폴더가 없습니다: " + SRC_ROOT.toAbsolutePath());
         }
         Files.createDirectories(OUT_ROOT);
@@ -66,24 +72,24 @@ public class ConvertStep2Comment {
             if (selections.contains(1)) {
                 convertToUtf8 = true;
                 removeBackticks = true;
-                System.out.println("✓ 전체 변환 선택됨 (2 + 3)");
+                log.info("✓ 전체 변환 선택됨 (2 + 3)");
             } else {
                 if (selections.contains(2)) {
                     convertToUtf8 = true;
-                    System.out.println("✓ EUCKR->UTF8 변환 선택됨");
+                    log.info("✓ EUCKR->UTF8 변환 선택됨");
                 }
                 if (selections.contains(3)) {
                     removeBackticks = true;
-                    System.out.println("✓ 주석 내 백틱 제거 선택됨");
+                    log.info("✓ 주석 내 백틱 제거 선택됨");
                 }
             }
         }
 
         // 실행 정보 출력
-        System.out.println("\n[시작] SRC=" + SRC_ROOT.toAbsolutePath());
-        System.out.println("       OUT=" + OUT_ROOT.toAbsolutePath());
-        System.out.println("       입력 인코딩=" + INPUT_CHARSET.displayName());
-        System.out.println("       옵션: EUCKR->UTF8=" + convertToUtf8 + ", 주석내 백틱 제거=" + removeBackticks);
+        log.info("입력 폴더: %s", SRC_ROOT.toAbsolutePath());
+        log.info("출력 폴더: %s", OUT_ROOT.toAbsolutePath());
+        log.info("입력 인코딩: %s", INPUT_CHARSET.displayName());
+        log.info("옵션: EUCKR->UTF8=%s, 주석내 백틱 제거=%s", convertToUtf8, removeBackticks);
 
         // 파일 처리 루프 (재귀 탐색)
         final int[] count = {0};
@@ -98,8 +104,8 @@ public class ConvertStep2Comment {
             }
         });
 
-        System.out.println("[완료] 변환 파일 수: " + count[0] + "개");
-        System.out.println("참고: DML 'set vs_jb_step = vs_jb_step + 1;' 문은 변경하지 않습니다.");
+        log.end("SQL 파일 변환", count[0]);
+        log.info("참고: DML 'set vs_jb_step = vs_jb_step + 1;' 문은 변경하지 않습니다.");
     }
 
     /**
@@ -128,6 +134,8 @@ public class ConvertStep2Comment {
      */
     private static void processFile(Path file, int[] count) {
         try {
+            log.fileStart(file.getFileName().toString());
+
             // 출력 경로: 입력 루트 기준 상대경로를 OUT_ROOT에 매핑
             Path outputFile = OUT_ROOT.resolve(SRC_ROOT.relativize(file));
             Files.createDirectories(outputFile.getParent());
@@ -144,8 +152,13 @@ public class ConvertStep2Comment {
             writeFile(outputFile, content);
 
             count[0]++;
+            log.fileEnd(file.getFileName().toString(), 1);
+
+            if (count[0] % 10 == 0) {
+                log.info("처리 중... (%d개 파일)", count[0]);
+            }
         } catch (IOException e) {
-            System.err.println("파일 처리 실패: " + file.getFileName() + " - " + e.getMessage());
+            log.fileError(file.getFileName().toString(), e);
         }
     }
 

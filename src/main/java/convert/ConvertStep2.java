@@ -1,5 +1,6 @@
 package convert;
 
+import common.log.SimpleAppLogger;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -16,6 +17,8 @@ import java.util.*;
  * - 1) 전체, 2) EUCKR->UTF8 변환, 3) 주석 내 백틱 제거
  */
 public class ConvertStep2 {
+
+    private static final SimpleAppLogger log = SimpleAppLogger.getLogger(ConvertStep2.class);
 
     private static final Path SRC_ROOT = Paths.get("D:\\11. Project\\11. DB");
     private static final Path OUT_ROOT = Paths.get("D:\\11. Project\\11. DB_OUT");
@@ -42,30 +45,33 @@ public class ConvertStep2 {
             return;
         }
 
+        log.start("SQL 파일 변환 (다중 옵션)");
+
         // 옵션 설정
         if (selections.contains(1)) {
             convertToUtf8 = true;
             removeBackticks = true;
-            System.out.println("✓ 전체 변환 선택됨");
+            log.info("✓ 전체 변환 선택됨");
         } else {
             if (selections.contains(2)) {
                 convertToUtf8 = true;
-                System.out.println("✓ EUCKR->UTF8 변환 선택됨");
+                log.info("✓ EUCKR->UTF8 변환 선택됨");
             }
             if (selections.contains(3)) {
                 removeBackticks = true;
-                System.out.println("✓ 주석 내 백틱 제거 선택됨");
+                log.info("✓ 주석 내 백틱 제거 선택됨");
             }
         }
 
         // 폴더 확인 및 생성
         if (!Files.isDirectory(SRC_ROOT)) {
+            log.error("입력 폴더가 없습니다: %s", SRC_ROOT);
             throw new IllegalArgumentException("입력 폴더가 없습니다: " + SRC_ROOT);
         }
         Files.createDirectories(OUT_ROOT);
 
-        System.out.println("\n[시작] SRC=" + SRC_ROOT.toAbsolutePath());
-        System.out.println("       OUT=" + OUT_ROOT.toAbsolutePath());
+        log.info("입력 폴더: %s", SRC_ROOT.toAbsolutePath());
+        log.info("출력 폴더: %s", OUT_ROOT.toAbsolutePath());
 
         // 파일 처리
         final int[] count = {0};
@@ -79,7 +85,7 @@ public class ConvertStep2 {
             }
         });
 
-        System.out.println("[완료] 변환 파일 수: " + count[0] + "개");
+        log.end("SQL 파일 변환", count[0]);
         scanner.close();
     }
 
@@ -101,6 +107,8 @@ public class ConvertStep2 {
 
     private static void processFile(Path file, int[] count) {
         try {
+            log.fileStart(file.getFileName().toString());
+
             Path outputFile = OUT_ROOT.resolve(SRC_ROOT.relativize(file));
             Files.createDirectories(outputFile.getParent());
 
@@ -112,8 +120,14 @@ public class ConvertStep2 {
 
             writeFile(outputFile, content);
             count[0]++;
+
+            log.fileEnd(file.getFileName().toString(), 1);
+
+            if (count[0] % 10 == 0) {
+                log.info("처리 중... (%d개 파일)", count[0]);
+            }
         } catch (IOException e) {
-            System.err.println("파일 처리 실패: " + file.getFileName() + " - " + e.getMessage());
+            log.fileError(file.getFileName().toString(), e);
         }
     }
 
