@@ -56,7 +56,7 @@ java -cp target/classes convert.ConvertStep2
 ```
 src/main/java/
 ├── com/log/             # 공통 로그 모듈
-│   └── SimpleAppLogger.java
+│   └── AppLogger.java
 ├── convert/             # SQL 변환 도구
 │   ├── ConvertStep1.java
 │   ├── ConvertStep2.java

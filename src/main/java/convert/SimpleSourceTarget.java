@@ -1,6 +1,6 @@
 package convert;
 
-import java.com.log.SimpleAppLogger;
+import java.com.log.AppLogger;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
  */
 public class SimpleSourceTarget {
 
-    private static final SimpleAppLogger log = SimpleAppLogger.getLogger(SimpleSourceTarget.class);
+    private static final AppLogger log = AppLogger.getLogger(SimpleSourceTarget.class);
 
     // 설정: 필요 시 경로를 수정하세요
     private static final Path SRC_ROOT = Paths.get("D:\\11. Project\\11. DB");

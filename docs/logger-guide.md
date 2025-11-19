@@ -190,11 +190,11 @@ public class ConvertStep1 {
 ```java
 package convert;
 
-import common.log.SimpleAppLogger;
+import java.com.log.AppLogger;
 
 public class SimpleSourceTarget {
     
-    private static final SimpleAppLogger log = SimpleAppLogger.getLogger(SimpleSourceTarget.class);
+    private static final AppLogger log = AppLogger.getLogger(SimpleSourceTarget.class);
     
     public static void main(String[] args) throws Exception {
         log.start("Source/Target 테이블 추출");
@@ -393,7 +393,7 @@ try {
 
 ## 🔗 관련 파일
 
-- `com/log/SimpleAppLogger.java` - 로그 모듈 소스
+- `com/log/AppLogger.java` - 로그 모듈 소스
 - `convert/SimpleSourceTarget.java` - 사용 예제 1
 - `convert/ConvertStep1.java` - 사용 예제 2
 - `convert/ConvertStep2.java` - 사용 예제 3

@@ -1,6 +1,6 @@
 package service.scan.processor;
 
-import java.com.log.SimpleAppLogger;
+import java.com.log.AppLogger;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -9,7 +9,7 @@ import java.nio.file.attribute.BasicFileAttributes;
  * 디렉토리 순회 스캐너
  */
 public class SqlFileScanner {
-    private static final SimpleAppLogger log = SimpleAppLogger.getLogger(SqlFileScanner.class);
+    private static final AppLogger log = AppLogger.getLogger(SqlFileScanner.class);
 
     private final SqlFileProcessor processor;
     private final String ext;

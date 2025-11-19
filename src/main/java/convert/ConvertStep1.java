@@ -1,6 +1,6 @@
 package com.cardgcp;
 
-import java.com.log.SimpleAppLogger;
+import java.com.log.AppLogger;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -18,7 +18,7 @@ import java.nio.file.attribute.BasicFileAttributes;
  */
 public class ConvertStep1 {
 
-    private static final SimpleAppLogger log = SimpleAppLogger.getLogger(ConvertStep1.class);
+    private static final AppLogger log = AppLogger.getLogger(ConvertStep1.class);
 
     // ========== 설정 (여기서 경로 변경) ==========
     private static final Path SRC_ROOT = Paths.get("D:\\11. Project\\11. DB");

@@ -1,6 +1,6 @@
 package convert;
 
-import java.com.log.SimpleAppLogger;
+import java.com.log.AppLogger;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -18,7 +18,7 @@ import java.util.*;
  */
 public class ConvertStep2 {
 
-    private static final SimpleAppLogger log = SimpleAppLogger.getLogger(ConvertStep2.class);
+    private static final AppLogger log = AppLogger.getLogger(ConvertStep2.class);
 
     private static final Path SRC_ROOT = Paths.get("D:\\11. Project\\11. DB");
     private static final Path OUT_ROOT = Paths.get("D:\\11. Project\\11. DB_OUT");

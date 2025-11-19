@@ -1,6 +1,6 @@
 package convert;
 
-import java.com.log.SimpleAppLogger;
+import java.com.log.AppLogger;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -20,7 +20,7 @@ import java.util.*;
  */
 public class ConvertStep2Comment {
 
-    private static final SimpleAppLogger log = SimpleAppLogger.getLogger(ConvertStep2Comment.class);
+    private static final AppLogger log = AppLogger.getLogger(ConvertStep2Comment.class);
 
     // 입력 폴더 루트 (재귀 탐색 대상)
     private static final Path SRC_ROOT = Paths.get("D:\\11. Project\\11. DB");

@@ -1,9 +1,9 @@
 package test;
 
-import java.com.log.SimpleAppLogger;
+import java.com.log.AppLogger;
 
 public class LoggerTest {
-    private static final SimpleAppLogger log = SimpleAppLogger.getLogger(LoggerTest.class);
+    private static final AppLogger log = AppLogger.getLogger(LoggerTest.class);
 
     public static void main(String[] args) {
         log.start("로그 테스트");
