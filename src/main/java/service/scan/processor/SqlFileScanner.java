@@ -1,6 +1,6 @@
 package service.scan.processor;
 
-import common.log.SimpleAppLogger;
+import java.com.log.SimpleAppLogger;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;

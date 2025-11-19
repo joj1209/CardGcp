@@ -1,6 +1,6 @@
 package convert;
 
-import common.log.SimpleAppLogger;
+import java.com.log.SimpleAppLogger;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;

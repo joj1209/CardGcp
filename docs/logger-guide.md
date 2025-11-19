@@ -393,7 +393,7 @@ try {
 
 ## 🔗 관련 파일
 
-- `common/log/SimpleAppLogger.java` - 로그 모듈 소스
+- `java/com/log/SimpleAppLogger.java` - 로그 모듈 소스
 - `convert/SimpleSourceTarget.java` - 사용 예제 1
 - `convert/ConvertStep1.java` - 사용 예제 2
 - `convert/ConvertStep2.java` - 사용 예제 3

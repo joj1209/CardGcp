@@ -1,4 +1,4 @@
-package common.log;
+package java.com.log;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
