@@ -35,3 +35,20 @@ java -cp target/CardGcp-0.0.1-SNAPSHOT.jar service.sql.SqlRunner
 - SELECT 결과가 없으면 예외가 발생한다.
 - JDBC 드라이버 JAR 은 `java -cp` 실행 시 포함시켜야 한다.
 
+# SQL 분석 도구
+
+## 개요
+- `service.analyze` 패키지에서 SQL 파일을 로드하고, 각 쿼리를 분석하여 사용된 테이블과 `SELECT *` 사용 여부를 출력합니다.
+- 입력 경로는 `Path sqlDir`로 설정하며, 기본값은 `D:/11. Project/11. DB` 입니다.
+
+## 주요 클래스
+- `SqlFileLoader`: 지정된 디렉터리에서 `.sql` 파일을 읽어 문자열 리스트로 반환합니다.
+- `SqlAnalyzer`: 각 SQL 문장을 파싱해 테이블 목록과 통계 정보를 생성합니다.
+- `SqlStatistics`: 분석 결과를 보관하며, 사용 테이블과 `SELECT *` 여부 등을 제공합니다.
+- `Main`: 위 클래스를 조합해 SQL 디렉터리를 순회하고 결과를 콘솔에 출력하는 실행 진입점입니다.
+
+## 실행 방법
+```powershell
+cd "D:/11. Project/02. Java/backend/CardGcp"
+./mvnw -q exec:java -Dexec.mainClass="service.analyze.Main"
+```
