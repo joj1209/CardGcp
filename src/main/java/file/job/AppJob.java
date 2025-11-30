@@ -24,7 +24,7 @@ public class AppJob {
         this.writer = writer;
     }
 
-    public static AppJob buildFactory() {
+    public static AppJob createJob() {
         Path input = Paths.get("D:", "11. Project", "11. DB", "BigQuery");
         SqlReader reader = new SqlReader(SqlReader.DEFAULT_CHARSET);
         FileParserProcessor processor = FileParserProcessor.withDefaults();
@@ -32,29 +32,29 @@ public class AppJob {
         return new AppJob(input, reader, processor, writer);
     }
 
-    public void stepRead() {
-        reader.run(inputDir, this::handleFile);
+    public void execute() {
+        reader.run(inputDir, this::processFile);
     }
 
-    private void handleFile(Path file, String sql) {
+    private void processFile(Path file, String sql) {
         try {
-            TablesInfo info = stepParse(sql);
-            stepWrite(file, info);
+            TablesInfo info = process(sql);
+            write(file, info);
         } catch (IOException ex) {
             System.err.println("파일 처리 실패: " + file + " - " + ex.getMessage());
         }
     }
 
-    private TablesInfo stepParse(String sql) {
+    private TablesInfo process(String sql) {
         return processor.parse(sql);
     }
 
-    private void stepWrite(Path file, TablesInfo info) throws IOException {
+    private void write(Path file, TablesInfo info) throws IOException {
         writer.writeTables(inputDir, file, info);
     }
 
     public static void main(String[] args) {
-        AppJob job = buildFactory();
-        job.stepRead();
+        AppJob job = createJob();
+        job.execute();
     }
 }

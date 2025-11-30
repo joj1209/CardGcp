@@ -88,23 +88,23 @@ Job
 ```
 AppJob
 ├── 파일1.sql
-│   ├── STEP1: Reader (파일1 읽기)
-│   ├── STEP2: Processor (파일1 파싱)
-│   └── STEP3: Writer (파일1 쓰기)
+│   ├── Reader (파일1 읽기)
+│   ├── Process (파일1 파싱)
+│   └── Write (파일1 쓰기)
 ├── 파일2.sql
-│   ├── STEP1: Reader (파일2 읽기)
-│   ├── STEP2: Processor (파일2 파싱)
-│   └── STEP3: Writer (파일2 쓰기)
+│   ├── Reader (파일2 읽기)
+│   ├── Process (파일2 파싱)
+│   └── Write (파일2 쓰기)
 └── 파일3.sql
-    ├── STEP1: Reader (파일3 읽기)
-    ├── STEP2: Processor (파일3 파싱)
-    └── STEP3: Writer (파일3 쓰기)
+    ├── Reader (파일3 읽기)
+    ├── Process (파일3 파싱)
+    └── Write (파일3 쓰기)
 ```
 
 **실행 순서**:
-1. 파일1에 대해 STEP1→2→3 완료
-2. 파일2에 대해 STEP1→2→3 완료
-3. 파일3에 대해 STEP1→2→3 완료
+1. 파일1에 대해 Reader→Process→Write 완료
+2. 파일2에 대해 Reader→Process→Write 완료
+3. 파일3에 대해 Reader→Process→Write 완료
 
 ## 3. 주요 차이점 상세 분석
 
@@ -131,9 +131,9 @@ AppJob
 
 **AppJob - 파일 단위 처리**:
 ```java
-private void handleFile(Path file, String sql) {
-    TablesInfo info = stepParse(sql);  // 전체 파일 파싱
-    stepWrite(file, info);              // 결과 쓰기
+private void processFile(Path file, String sql) {
+    TablesInfo info = process(sql);  // 전체 파일 파싱
+    write(file, info);                // 결과 쓰기
 }
 ```
 - 파일 전체를 메모리에 로드하여 처리
@@ -161,10 +161,10 @@ public Step step1(JobRepository jobRepository,
 
 **AppJob**:
 ```java
-private void handleFile(Path file, String sql) {
+private void processFile(Path file, String sql) {
     try {
-        TablesInfo info = stepParse(sql);
-        stepWrite(file, info);
+        TablesInfo info = process(sql);
+        write(file, info);
     } catch (IOException ex) {
         System.err.println("파일 처리 실패: " + file);
         // 다음 파일 계속 처리
@@ -222,12 +222,12 @@ public Job conditionalJob(JobRepository jobRepository) {
 
 **AppJob - 고정된 파이프라인**:
 ```java
-private void handleFile(Path file, String sql) {
-    TablesInfo info = stepParse(sql);    // 항상 STEP2 실행
-    stepWrite(file, info);                // 항상 STEP3 실행
+private void processFile(Path file, String sql) {
+    TablesInfo info = process(sql);    // 항상 Process 실행
+    write(file, info);                  // 항상 Write 실행
 }
 ```
-- 고정된 순서로만 실행 (STEP1→2→3)
+- 고정된 순서로만 실행 (Reader→Process→Write)
 - 조건부 분기 불가
 - 단순하고 예측 가능한 흐름
 
@@ -271,29 +271,29 @@ Chunk 2 (100개)
 ### AppJob의 파일 처리 흐름
 
 ```java
-public void stepRead() {
-    reader.run(inputDir, this::handleFile);
+public void execute() {
+    reader.run(inputDir, this::processFile);
 }
 
-private void handleFile(Path file, String sql) {
-    TablesInfo info = stepParse(sql);
-    stepWrite(file, info);
+private void processFile(Path file, String sql) {
+    TablesInfo info = process(sql);
+    write(file, info);
 }
 ```
 
 **처리 흐름**:
 ```
-stepRead() 실행
+execute() 실행
   ↓
 파일1.sql
   ├── Reader: 파일 전체 내용 읽기
-  ├── Processor: 전체 내용 파싱
-  └── Writer: 결과 파일 쓰기
+  ├── Process: 전체 내용 파싱
+  └── Write: 결과 파일 쓰기
   ↓
 파일2.sql
   ├── Reader: 파일 전체 내용 읽기
-  ├── Processor: 전체 내용 파싱
-  └── Writer: 결과 파일 쓰기
+  ├── Process: 전체 내용 파싱
+  └── Write: 결과 파일 쓰기
 ```
 
 ## 5. 각 접근 방식의 장단점

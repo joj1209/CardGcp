@@ -61,7 +61,7 @@ SQL 문자열을 파싱하여 소스/타겟 테이블 정보를 추출합니다.
 
 ## 메서드
 
-### buildFactory()
+### createJob()
 
 기본 설정으로 `AppJob` 인스턴스를 생성하는 정적 팩토리 메서드입니다.
 
@@ -76,34 +76,34 @@ SQL 문자열을 파싱하여 소스/타겟 테이블 정보를 추출합니다.
 
 특정 경로나 문자셋을 사용하려면 생성자를 직접 호출하십시오.
 
-### stepRead()
+### execute()
 
-STEP1: `SqlReader`를 사용하여 입력 디렉토리의 모든 .sql 파일을 읽고 처리를 시작합니다.
+Job을 실행하여 입력 디렉토리의 모든 .sql 파일을 읽고 처리를 시작합니다.
 
 이 메서드는 배치 파이프라인의 진입점으로, 다음 작업을 수행합니다:
 
 1. `inputDir` 경로에 있는 모든 .sql 파일을 재귀적으로 탐색합니다.
 2. 각 파일을 지정된 문자셋(기본: EUC-KR)으로 읽어들입니다.
-3. 읽은 파일 경로와 내용을 `handleFile(Path, String)` 메서드로 전달합니다.
-4. `handleFile` 메서드에서 STEP2(파싱)와 STEP3(출력)이 순차적으로 실행됩니다.
+3. 읽은 파일 경로와 내용을 `processFile(Path, String)` 메서드로 전달합니다.
+4. `processFile` 메서드에서 파싱과 쓰기가 순차적으로 실행됩니다.
 
 **처리 흐름**:
 ```
-stepRead()
+execute()
   → SqlReader.run()
-  → 각 파일마다 handleFile() 호출
-  → stepParse() + stepWrite()
+  → 각 파일마다 processFile() 호출
+  → process() + write()
 ```
 
-### handleFile(Path file, String sql)
+### processFile(Path file, String sql)
 
 `SqlReader`가 읽어온 단일 SQL 파일을 처리하는 핵심 메서드입니다.
 
-이 메서드는 STEP2(파싱)와 STEP3(출력)을 순차적으로 실행하며, `SqlReader`의 콜백 함수로 각 파일마다 호출됩니다.
+이 메서드는 파싱과 쓰기를 순차적으로 실행하며, `SqlReader`의 콜백 함수로 각 파일마다 호출됩니다.
 
 **처리 순서**:
-1. **STEP2 실행**: `stepParse(String)`를 호출하여 SQL을 파싱하고 소스/타겟 테이블 정보를 추출합니다.
-2. **STEP3 실행**: `stepWrite(Path, TablesInfo)`를 호출하여 추출된 정보를 결과 파일로 저장합니다.
+1. **Process 실행**: `process(String)`를 호출하여 SQL을 파싱하고 소스/타겟 테이블 정보를 추출합니다.
+2. **Write 실행**: `write(Path, TablesInfo)`를 호출하여 추출된 정보를 결과 파일로 저장합니다.
 
 **예외 처리**: 파일 쓰기 과정에서 `IOException`이 발생하면 해당 파일의 처리를 건너뛰고 에러 메시지를 표준 에러 스트림에 출력합니다. 다른 파일의 처리는 계속 진행됩니다.
 
@@ -111,9 +111,9 @@ stepRead()
 - `file` - 원본 SQL 파일의 절대 경로 (예: `D:\11. Project\11. DB\BigQuery\sample.sql`)
 - `sql` - 파일에서 읽어들인 SQL 문자열 전체 내용
 
-### stepParse(String sql)
+### process(String sql)
 
-STEP2: `FileParserProcessor`를 사용하여 SQL 문자열에서 소스/타겟 테이블 정보를 추출합니다.
+`FileParserProcessor`를 사용하여 SQL 문자열에서 소스/타겟 테이블 정보를 추출합니다.
 
 이 단계에서는 SQL 문자열을 분석하여 다음 정보를 추출합니다:
 
@@ -133,9 +133,9 @@ STEP2: `FileParserProcessor`를 사용하여 SQL 문자열에서 소스/타겟 �
 
 **반환값**: `TablesInfo` 객체 (소스 테이블 Set, 타겟 테이블 Set 포함)
 
-### stepWrite(Path file, TablesInfo info)
+### write(Path file, TablesInfo info)
 
-STEP3: `TextWriter`를 사용하여 파싱된 테이블 정보를 결과 파일로 저장합니다.
+`TextWriter`를 사용하여 파싱된 테이블 정보를 결과 파일로 저장합니다.
 
 이 단계에서는 추출된 소스/타겟 테이블 정보를 지정된 형식으로 파일에 기록합니다.
 
@@ -169,8 +169,8 @@ STEP3: `TextWriter`를 사용하여 파싱된 테이블 정보를 결과 파일�
 프로그램의 진입점입니다. 기본 설정으로 배치 작업을 실행합니다.
 
 **실행 순서**:
-1. `buildFactory()`를 호출하여 기본 설정의 `AppJob` 인스턴스를 생성합니다.
-2. `stepRead()`를 호출하여 SQL 파일 읽기 및 처리를 시작합니다.
+1. `createJob()`를 호출하여 기본 설정의 `AppJob` 인스턴스를 생성합니다.
+2. `execute()`를 호출하여 SQL 파일 읽기 및 처리를 시작합니다.
 3. 입력 디렉토리의 모든 .sql 파일에 대해 파싱 및 출력 작업이 순차적으로 실행됩니다.
 
 **파라미터**:
@@ -181,8 +181,8 @@ STEP3: `TextWriter`를 사용하여 파싱된 테이블 정보를 결과 파일�
 ### 기본 설정으로 실행
 
 ```java
-AppJob job = AppJob.buildFactory();
-job.stepRead();
+AppJob job = AppJob.createJob();
+job.execute();
 ```
 
 ### 커스텀 설정으로 실행
@@ -195,7 +195,7 @@ SqlReader customReader = new SqlReader(Charset.forName("UTF-8"));
 FileParserProcessor customProcessor = FileParserProcessor.withDefaults();
 TextWriter customWriter = new TextWriter(Paths.get("D:", "custom", "output"), Charset.forName("UTF-8"));
 AppJob customJob = new AppJob(customInput, customReader, customProcessor, customWriter);
-customJob.stepRead();
+customJob.execute();
 ```
 
 ### 실행 방법 (명령줄)
