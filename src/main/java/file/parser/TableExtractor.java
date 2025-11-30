@@ -35,19 +35,18 @@ public class TableExtractor {
      */
     public TablesInfo extractTables(String sql) {
         TablesInfo info = new TablesInfo();
-        String cleanedSql = sql.replaceAll("(?s)/\\*.*?\\*/", " "); // 블록 주석 제거
+        String cleanedSql = sql.replaceAll("(?s)/\\*.*?\\*/", " ");
 
-        // 타겟 테이블 추출 (DML)
         extractByPattern(cleanedSql, "INSERT\\s+INTO\\s+", info.getTargets());
         extractByPattern(cleanedSql, "UPDATE\\s+", info.getTargets());
         extractByPattern(cleanedSql, "MERGE\\s+INTO\\s+", info.getTargets());
         extractByPattern(cleanedSql, "DELETE\\s+FROM\\s+", info.getTargets());
+        extractByPattern(cleanedSql, "DELETE\\s+", info.getTargets());
 
-        // 소스 테이블 추출 (SELECT)
         extractByPattern(cleanedSql, "FROM\\s+", info.getSources());
         extractByPattern(cleanedSql, "JOIN\\s+", info.getSources());
         extractByPattern(cleanedSql, "USING\\s+", info.getSources());
-        extractFromClause(cleanedSql, info.getSources()); // Oracle 조인(콤마 구분)
+        extractFromClause(cleanedSql, info.getSources());
 
         return info;
     }
