@@ -29,9 +29,9 @@ STEP별 테이블 정보를 포맷팅하여 파일로 저장합니다.
 
 ## 필드
 
-### inputDir
+### inputPath
 - **타입**: `Path`
-- **설명**: SQL 파일이 위치한 입력 디렉토리 경로
+- **설명**: SQL 파일이 위치한 입력 디렉토리 경로 또는 단일 SQL 파일 경로입니다. 디렉토리인 경우 모든 .sql 파일을 처리하고, 파일인 경우 해당 파일만 처리합니다.
 
 ### reader
 - **타입**: `SqlReader`
@@ -71,17 +71,62 @@ STEP별 테이블 정보를 포맷팅하여 파일로 저장합니다.
 
 **반환값**: 기본 설정이 적용된 `AppStepJob` 인스턴스
 
+### createJob(String inputPath)
+
+사용자 지정 경로로 `AppStepJob` 인스턴스를 생성하는 정적 팩토리 메서드입니다.
+
+**파라미터**:
+- `inputPath` - 입력 디렉토리 경로 또는 단일 SQL 파일 경로 (문자열)
+
+**반환값**: 지정된 경로가 적용된 `AppStepJob` 인스턴스
+
+**사용 예시**:
+```java
+// 디렉토리 지정
+AppStepJob job1 = AppStepJob.createJob("D:\\myproject\\sql");
+
+// 단일 파일 지정
+AppStepJob job2 = AppStepJob.createJob("D:\\myproject\\sql\\batch.sql");
+```
+
 ### execute()
 
-Job을 실행하여 입력 디렉토리의 모든 .sql 파일을 읽고 스텝별로 처리를 시작합니다.
+Job을 실행하여 입력 경로의 파일들을 읽고 스텝별로 처리를 시작합니다.
+
+이 메서드는 입력 경로의 타입에 따라 다르게 동작합니다:
+
+**디렉토리인 경우**:
+1. `inputPath` 경로에 있는 모든 .sql 파일을 재귀적으로 탐색합니다.
+2. 각 파일을 읽어서 스텝별로 처리합니다.
+
+**단일 파일인 경우**:
+1. 해당 파일만 읽어서 스텝별로 처리합니다.
+2. `processSingleFile(Path)` 메서드를 호출합니다.
+
+**잘못된 경로인 경우**:
+- 에러 메시지를 출력하고 종료합니다.
 
 **처리 흐름**:
 ```
 execute()
-  → SqlReader.run()
-  → 각 파일마다 processFile() 호출
+  → Files.isDirectory() 체크
+    → 디렉토리: SqlReader.run() → 각 파일마다 processFile() 호출
+    → 파일: processSingleFile() → processFile() 호출
   → processSteps() + write()
 ```
+
+### processSingleFile(Path file)
+
+단일 SQL 파일을 읽어서 스텝별로 처리하는 메서드입니다.
+
+**동작 방식**:
+1. `SqlReader.readFile()`로 파일 내용을 읽습니다.
+2. `processFile(file, sql)`을 호출하여 스텝별 파싱 및 쓰기를 진행합니다.
+
+**파라미터**:
+- `file` - 처리할 SQL 파일의 경로
+
+**예외 처리**: 파일 읽기 실패 시 에러 로그 출력 후 종료
 
 ### processFile(Path file, String sql)
 
@@ -146,11 +191,28 @@ STEP별 테이블 정보를 파일로 저장합니다.
 
 ### main(String[] args)
 
-프로그램의 진입점입니다.
+프로그램의 진입점입니다. 기본 설정 또는 명령줄 인자로 배치 작업을 실행합니다.
 
 **실행 순서**:
-1. `createJob()`으로 기본 설정의 인스턴스 생성
-2. `execute()`로 배치 작업 실행
+1. 명령줄 인자가 있으면 `createJob(args[0])`으로 지정된 경로의 인스턴스를 생성합니다.
+2. 명령줄 인자가 없으면 `createJob()`으로 기본 설정의 인스턴스를 생성합니다.
+3. `execute()`를 호출하여 스텝별 SQL 파일 읽기 및 처리를 시작합니다.
+
+**파라미터**:
+- `args` - 명령줄 인자
+  - `args[0]`: 입력 디렉토리 경로 또는 단일 파일 경로 (선택사항)
+
+**실행 예시**:
+```bash
+# 기본 경로로 실행
+java file.job.AppStepJob
+
+# 특정 디렉토리 지정
+java file.job.AppStepJob "D:\myproject\sql"
+
+# 단일 파일 지정
+java file.job.AppStepJob "D:\myproject\sql\batch.sql"
+```
 
 ## STEP 마커 패턴
 
@@ -239,6 +301,33 @@ BM.`사용자`
 ```java
 AppStepJob job = AppStepJob.createJob();
 job.execute();
+```
+
+### 사용자 지정 디렉토리로 실행
+
+```java
+AppStepJob job = AppStepJob.createJob("D:\\myproject\\sql");
+job.execute();
+```
+
+### 단일 파일 처리
+
+```java
+AppStepJob job = AppStepJob.createJob("D:\\myproject\\sql\\batch.sql");
+job.execute();
+```
+
+### 명령줄에서 실행
+
+```bash
+# 기본 경로로 실행
+java file.job.AppStepJob
+
+# 디렉토리 지정
+java file.job.AppStepJob "D:\custom\sql"
+
+# 단일 파일 지정
+java file.job.AppStepJob "D:\custom\sql\batch.sql"
 ```
 
 ### 커스텀 설정 실행

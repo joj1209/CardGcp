@@ -31,9 +31,9 @@ SQL 문자열을 파싱하여 소스/타겟 테이블 정보를 추출합니다.
 
 ## 필드 설명
 
-### inputDir
+### inputPath
 - **타입**: `Path`
-- **설명**: SQL 파일이 위치한 입력 디렉토리 경로입니다. 이 디렉토리의 모든 .sql 파일이 처리 대상이 됩니다.
+- **설명**: SQL 파일이 위치한 입력 디렉토리 경로 또는 단일 SQL 파일 경로입니다. 디렉토리인 경우 모든 .sql 파일을 처리하고, 파일인 경우 해당 파일만 처리합니다.
 
 ### reader
 - **타입**: `SqlReader`
@@ -76,24 +76,64 @@ SQL 문자열을 파싱하여 소스/타겟 테이블 정보를 추출합니다.
 
 특정 경로나 문자셋을 사용하려면 생성자를 직접 호출하십시오.
 
+### createJob(String inputPath)
+
+사용자 지정 경로로 `AppJob` 인스턴스를 생성하는 정적 팩토리 메서드입니다.
+
+**파라미터**:
+- `inputPath` - 입력 디렉토리 경로 또는 단일 SQL 파일 경로 (문자열)
+
+**반환값**: 지정된 경로가 적용된 `AppJob` 인스턴스
+
+**사용 예시**:
+```java
+// 디렉토리 지정
+AppJob job1 = AppJob.createJob("D:\\myproject\\sql");
+
+// 단일 파일 지정
+AppJob job2 = AppJob.createJob("D:\\myproject\\sql\\batch.sql");
+```
+
 ### execute()
 
-Job을 실행하여 입력 디렉토리의 모든 .sql 파일을 읽고 처리를 시작합니다.
+Job을 실행하여 입력 경로의 파일들을 읽고 처리를 시작합니다.
 
-이 메서드는 배치 파이프라인의 진입점으로, 다음 작업을 수행합니다:
+이 메서드는 배치 파이프라인의 진입점으로, 입력 경로의 타입에 따라 다르게 동작합니다:
 
-1. `inputDir` 경로에 있는 모든 .sql 파일을 재귀적으로 탐색합니다.
+**디렉토리인 경우**:
+1. `inputPath` 경로에 있는 모든 .sql 파일을 재귀적으로 탐색합니다.
 2. 각 파일을 지정된 문자셋(기본: EUC-KR)으로 읽어들입니다.
 3. 읽은 파일 경로와 내용을 `processFile(Path, String)` 메서드로 전달합니다.
 4. `processFile` 메서드에서 파싱과 쓰기가 순차적으로 실행됩니다.
 
+**단일 파일인 경우**:
+1. 해당 파일만 읽어서 처리합니다.
+2. `processSingleFile(Path)` 메서드를 호출합니다.
+
+**잘못된 경로인 경우**:
+- 에러 메시지를 출력하고 종료합니다.
+
 **처리 흐름**:
 ```
 execute()
-  → SqlReader.run()
-  → 각 파일마다 processFile() 호출
+  → Files.isDirectory() 체크
+    → 디렉토리: SqlReader.run() → 각 파일마다 processFile() 호출
+    → 파일: processSingleFile() → processFile() 호출
   → process() + write()
 ```
+
+### processSingleFile(Path file)
+
+단일 SQL 파일을 읽어서 처리하는 메서드입니다.
+
+**동작 방식**:
+1. `SqlReader.readFile()`로 파일 내용을 읽습니다.
+2. `processFile(file, sql)`을 호출하여 파싱 및 쓰기를 진행합니다.
+
+**파라미터**:
+- `file` - 처리할 SQL 파일의 경로
+
+**예외 처리**: 파일 읽기 실패 시 에러 로그 출력 후 종료
 
 ### processFile(Path file, String sql)
 
@@ -139,6 +179,11 @@ execute()
 
 이 단계에서는 추출된 소스/타겟 테이블 정보를 지정된 형식으로 파일에 기록합니다.
 
+**동작 방식**:
+1. 입력 경로가 디렉토리인 경우 해당 디렉토리를 baseDir로 사용
+2. 입력 경로가 파일인 경우 부모 디렉토리를 baseDir로 사용
+3. `TextWriter.writeTables()`를 호출하여 파일에 저장
+
 **출력 파일 형식**:
 - **파일명**: `{원본파일명}_out.txt` (예: `sample.sql` → `sample_out.txt`)
 - **저장 위치**: `TextWriter`에 지정된 출력 디렉토리 (기본: `D:\11. Project\11. DB\BigQuery_out`)
@@ -166,23 +211,63 @@ execute()
 
 ### main(String[] args)
 
-프로그램의 진입점입니다. 기본 설정으로 배치 작업을 실행합니다.
+프로그램의 진입점입니다. 기본 설정 또는 명령줄 인자로 배치 작업을 실행합니다.
 
 **실행 순서**:
-1. `createJob()`를 호출하여 기본 설정의 `AppJob` 인스턴스를 생성합니다.
-2. `execute()`를 호출하여 SQL 파일 읽기 및 처리를 시작합니다.
-3. 입력 디렉토리의 모든 .sql 파일에 대해 파싱 및 출력 작업이 순차적으로 실행됩니다.
+1. 명령줄 인자가 있으면 `createJob(args[0])`으로 지정된 경로의 인스턴스를 생성합니다.
+2. 명령줄 인자가 없으면 `createJob()`으로 기본 설정의 인스턴스를 생성합니다.
+3. `execute()`를 호출하여 SQL 파일 읽기 및 처리를 시작합니다.
 
 **파라미터**:
-- `args` - 명령줄 인자 (현재 사용되지 않음)
+- `args` - 명령줄 인자
+  - `args[0]`: 입력 디렉토리 경로 또는 단일 파일 경로 (선택사항)
+
+**실행 예시**:
+```bash
+# 기본 경로로 실행
+java file.job.AppJob
+
+# 특정 디렉토리 지정
+java file.job.AppJob "D:\myproject\sql"
+
+# 단일 파일 지정
+java file.job.AppJob "D:\myproject\sql\batch.sql"
+```
 
 ## 사용 예시
 
-### 기본 설정으로 실행
+### 기본 설정으로 실행 (디렉토리)
 
 ```java
 AppJob job = AppJob.createJob();
 job.execute();
+```
+
+### 사용자 지정 디렉토리로 실행
+
+```java
+AppJob job = AppJob.createJob("D:\\myproject\\sql");
+job.execute();
+```
+
+### 단일 파일 처리
+
+```java
+AppJob job = AppJob.createJob("D:\\myproject\\sql\\batch.sql");
+job.execute();
+```
+
+### 명령줄에서 실행
+
+```bash
+# 기본 경로로 실행
+java file.job.AppJob
+
+# 디렉토리 지정
+java file.job.AppJob "D:\custom\sql"
+
+# 단일 파일 지정
+java file.job.AppJob "D:\custom\sql\batch.sql"
 ```
 
 ### 커스텀 설정으로 실행

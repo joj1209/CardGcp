@@ -7,6 +7,7 @@ import file.vo.TablesInfo;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedHashMap;
@@ -16,13 +17,13 @@ import java.util.regex.Pattern;
 
 public class AppStepJob {
 
-    private final Path inputDir;
+    private final Path inputPath;
     private final SqlReader reader;
     private final FileParserProcessor processor;
     private final TextStepWriter writer;
 
-    public AppStepJob(Path inputDir, SqlReader reader, FileParserProcessor processor, TextStepWriter writer) {
-        this.inputDir = inputDir;
+    public AppStepJob(Path inputPath, SqlReader reader, FileParserProcessor processor, TextStepWriter writer) {
+        this.inputPath = inputPath;
         this.reader = reader;
         this.processor = processor;
         this.writer = writer;
@@ -36,8 +37,33 @@ public class AppStepJob {
         return new AppStepJob(input, reader, processor, writer);
     }
 
+    public static AppStepJob createJob(String inputPath) {
+        Path input = Paths.get(inputPath);
+        SqlReader reader = new SqlReader(SqlReader.DEFAULT_CHARSET);
+        FileParserProcessor processor = FileParserProcessor.withDefaults();
+        TextStepWriter writer = new TextStepWriter(TextStepWriter.DEFAULT_OUTPUT_DIR, Charset.forName("UTF-8"));
+        return new AppStepJob(input, reader, processor, writer);
+    }
+
     public void execute() {
-        reader.run(inputDir, this::processFile);
+        if (Files.isDirectory(inputPath)) {
+            System.out.println("[AppStepJob] Processing directory: " + inputPath);
+            reader.run(inputPath, this::processFile);
+        } else if (Files.isRegularFile(inputPath)) {
+            System.out.println("[AppStepJob] Processing single file: " + inputPath);
+            processSingleFile(inputPath);
+        } else {
+            System.err.println("[AppStepJob] Invalid path (not a file or directory): " + inputPath);
+        }
+    }
+
+    private void processSingleFile(Path file) {
+        try {
+            String sql = reader.readFile(file);
+            processFile(file, sql);
+        } catch (IOException ex) {
+            System.err.println("File read failed: " + file + " - " + ex.getMessage());
+        }
     }
 
     private void processFile(Path file, String sql) {
@@ -63,7 +89,6 @@ public class AppStepJob {
         String lastStep = null;
 
         while (matcher.find()) {
-            // 이전 STEP의 SQL 처리
             if (lastStep != null) {
                 String stepSql = sql.substring(lastStart, matcher.start());
                 if (!stepSql.trim().isEmpty()) {
@@ -75,13 +100,11 @@ public class AppStepJob {
                 }
             }
 
-            // 현재 STEP 설정
             String stepNum = matcher.group(1) != null ? matcher.group(1) : matcher.group(2);
             lastStep = "STEP" + String.format("%03d", Integer.parseInt(stepNum));
             lastStart = matcher.end();
         }
 
-        // 마지막 STEP 처리
         if (lastStep != null) {
             String stepSql = sql.substring(lastStart);
             if (!stepSql.trim().isEmpty()) {
@@ -93,7 +116,6 @@ public class AppStepJob {
             }
         }
 
-        // STEP 마커가 없는 경우
         if (stepTables.isEmpty()) {
             TablesInfo info = processor.parse(sql);
             stepTables.put("STEP000", info);
@@ -104,11 +126,17 @@ public class AppStepJob {
     }
 
     private void write(Path file, Map<String, TablesInfo> stepTables) throws IOException {
-        writer.writeStepTables(inputDir, file, stepTables);
+        Path baseDir = Files.isDirectory(inputPath) ? inputPath : inputPath.getParent();
+        writer.writeStepTables(baseDir, file, stepTables);
     }
 
     public static void main(String[] args) {
-        AppStepJob job = createJob();
+        AppStepJob job;
+        if (args.length > 0) {
+            job = createJob(args[0]);
+        } else {
+            job = createJob();
+        }
         job.execute();
     }
 }
