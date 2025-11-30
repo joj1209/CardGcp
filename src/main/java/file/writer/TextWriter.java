@@ -29,11 +29,11 @@ public class TextWriter {
 
     public Path write(String relativeFile, String content) throws IOException {
         Path target = outputDir.resolve(relativeFile);
-        System.out.println("[Writer] 출력 디렉토리 생성: " + target.getParent());
+        System.out.println("[Writer] Creating output directory: " + target.getParent());
         Files.createDirectories(target.getParent());
-        System.out.println("[Writer] 파일 쓰기 시작: " + target.getFileName());
+        System.out.println("[Writer] Writing file: " + target.getFileName());
         Path result = Files.write(target, content.getBytes(charset));
-        System.out.println("[Writer] 파일 쓰기 완료: " + target);
+        System.out.println("[Writer] File write completed: " + target);
         return result;
     }
 
@@ -41,11 +41,11 @@ public class TextWriter {
      * 입력 루트 대비 상대 경로를 유지하면서 테이블 정보를 파일로 기록합니다.
      */
     public Path writeTables(Path inputDir, Path file, TablesInfo info) throws IOException {
-        System.out.println("[Writer] 테이블 정보 처리: " + file.getFileName());
+        System.out.println("[Writer] Processing table info: " + file.getFileName());
         String relativeName = buildOutputName(inputDir, file);
-        System.out.println("[Writer] 출력 파일명 생성: " + relativeName);
-        System.out.println("[Writer] 소스 테이블 수: " + info.getSources().size() +
-                          ", 타겟 테이블 수: " + info.getTargets().size());
+        System.out.println("[Writer] Generated output filename: " + relativeName);
+        System.out.println("[Writer] Source tables: " + info.getSources().size() +
+                          ", Target tables: " + info.getTargets().size());
         return writeTables(relativeName, info);
     }
 
@@ -57,12 +57,12 @@ public class TextWriter {
     }
 
     public Path writeTables(String relativeFile, service.scan.model.TablesInfo info) throws IOException {
-        System.out.println("[Writer] service.scan.model.TablesInfo를 file.vo.TablesInfo로 변환 중...");
+        System.out.println("[Writer] Converting service.scan.model.TablesInfo to file.vo.TablesInfo...");
         TablesInfo converted = new TablesInfo();
         info.getSources().forEach(converted::addSource);
         info.getTargets().forEach(converted::addTarget);
-        System.out.println("[Writer] 변환 완료 - 소스: " + converted.getSources().size() +
-                          ", 타겟: " + converted.getTargets().size());
+        System.out.println("[Writer] Conversion completed - Sources: " + converted.getSources().size() +
+                          ", Targets: " + converted.getTargets().size());
         return writeTables(relativeFile, converted);
     }
 
