@@ -20,6 +20,7 @@ public class TableExtractorBasicTest {
         testSelectFrom();
         testJoin();
         testComplexQuery();
+        testCommaSeparatedFromClauseCapturesAllTables();
 
         System.out.println("\n========================================");
         System.out.println("테스트 완료!");
@@ -140,5 +141,24 @@ public class TableExtractorBasicTest {
                       tables.getSources().contains("dept_master");
         System.out.println("  결과: " + (pass ? "✅ PASS" : "❌ FAIL") + "\n");
     }
-}
 
+    /**
+     * 테스트 7: 쉼표로 구분된 테이블 (FROM 절)
+     */
+    private static void testCommaSeparatedFromClauseCapturesAllTables() {
+        System.out.println("[테스트 7] 쉼표로 구분된 테이블 (FROM 절)");
+        String sql = "INSERT INTO BM.`회사` SELECT * FROM DW.`회사목록` N1, DW.`사무실` N2 WHERE N1.회사ID = N2.회사ID;";
+
+        TableExtractor extractor = new TableExtractor();
+        TablesInfo tables = extractor.extractTables(sql);
+
+        System.out.println("  SQL: " + sql);
+        System.out.println("  Target: " + tables.getTargets());
+        System.out.println("  Source: " + tables.getSources());
+
+        boolean pass = tables.getTargets().contains("BM.`회사`") &&
+                      tables.getSources().contains("DW.`회사목록`") &&
+                      tables.getSources().contains("DW.`사무실`");
+        System.out.println("  결과: " + (pass ? "✅ PASS" : "❌ FAIL") + "\n");
+    }
+}

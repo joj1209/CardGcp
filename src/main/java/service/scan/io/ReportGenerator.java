@@ -30,4 +30,3 @@ public class ReportGenerator {
         return sb.toString();
     }
 }
-

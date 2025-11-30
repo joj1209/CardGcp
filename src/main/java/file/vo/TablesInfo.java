@@ -1,4 +1,4 @@
-package service.scan.model;
+package file.vo;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -23,15 +23,11 @@ public class TablesInfo {
     }
 
     public void addSource(String name) {
-        if (name != null && !name.isEmpty()) {
-            sources.add(name);
-        }
+        if (name != null && !name.isEmpty()) sources.add(name);
     }
 
     public void addTarget(String name) {
-        if (name != null && !name.isEmpty()) {
-            targets.add(name);
-        }
+        if (name != null && !name.isEmpty()) targets.add(name);
     }
 }
 

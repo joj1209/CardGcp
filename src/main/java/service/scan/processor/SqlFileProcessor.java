@@ -1,8 +1,8 @@
 package service.scan.processor;
 
+import service.scan.model.TablesInfo;
 import service.scan.io.FileReaderUtil;
 import service.scan.io.ReportGenerator;
-import service.scan.model.TablesInfo;
 import service.scan.parser.TableExtractor;
 
 import java.io.IOException;
@@ -55,4 +55,3 @@ public class SqlFileProcessor {
         Files.write(out, s.getBytes("UTF-8"), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
     }
 }
-

@@ -1,0 +1,37 @@
+<html><head><meta charset='UTF-8'><title>분석 결과</title></head><body>
+<h1>BigQuery 분석 리포트</h1>
+<h2>요약</h2><ul>
+<li>STEP 수: 2</li>
+<li>총 테이블 수: 4</li>
+<li>총 컬럼 수: 2</li>
+<li>총 조건절 수: 1</li>
+<li>발견된 오류 수: 4</li>
+</ul>
+<hr><h3>STEP001</h3>
+<b>테이블:</b><ul>
+<li>project.dataset.target_table</li>
+<li>project.dataset.source_table</li>
+</ul><b>컬럼:</b><ul>
+<li>*</li>
+</ul><b>조건:</b><ul>
+</ul><b>테이블 변경 추적:</b><ul>
+</ul><b>오류:</b><ul>
+<li style='color:red;'>BEGIN-END 블록 수 불일치</li>
+<li style='color:red;'>END 구문 뒤에 세미콜론 없음</li>
+</ul>
+<hr><h3>STEP002</h3>
+<b>테이블:</b><ul>
+<li>project.dataset.another_target</li>
+<li>SET</li>
+</ul><b>컬럼:</b><ul>
+<li>T.name</li>
+</ul><b>조건:</b><ul>
+<li>T.id = S.id</li>
+</ul><b>테이블 변경 추적:</b><ul>
+<li>T → project.dataset.another_target</li>
+<li>S → project.dataset.another_source</li>
+</ul><b>오류:</b><ul>
+<li style='color:red;'>BEGIN-END 블록 수 불일치</li>
+<li style='color:red;'>END 구문 뒤에 세미콜론 없음</li>
+</ul>
+</body></html>

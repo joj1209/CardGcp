@@ -13,8 +13,12 @@ import java.util.regex.Pattern;
 public class TableExtractor {
     // 백틱이 있는 테이블: schema.`table` 또는 `table`
     // 백틱이 없는 테이블: schema.table 또는 table
+    private static final String IDENT = "[\\p{L}\\p{N}_$]+";
     private static final String TABLE_ID =
-            "(`[^`]+`|[A-Za-z0-9_$.]+\\.`[^`]+`|[A-Za-z0-9_$.]+\\.[A-Za-z0-9_$]+|[A-Za-z0-9_$]+)";
+            "(`[^`]+`|(?:" + IDENT + "\\.)*`[^`]+`|" + IDENT + "(?:\\." + IDENT + ")*)";
+    private static final Pattern FROM_WITH_TAIL = Pattern.compile("(?is)\\bFROM\\s+(" + TABLE_ID + ")([^;]*)");
+    private static final Pattern COMMA_TABLE = Pattern.compile("(?is),\\s*" + TABLE_ID);
+    private static final Pattern CLAUSE_BREAK = Pattern.compile("(?is)\\b(WHERE|JOIN|LEFT|RIGHT|FULL|INNER|OUTER|ON|GROUP|ORDER|HAVING|UNION|EXCEPT|INTERSECT|QUALIFY|CONNECT|USING|LIMIT|OFFSET)\\b");
 
     // 제외할 SQL 키워드들
     private static final Set<String> SQL_KEYWORDS = new HashSet<>();
@@ -49,19 +53,38 @@ public class TableExtractor {
         findTables(s, deleteFrom, t.getTargets());
         findTables(s, fromSrc   , t.getSources());
         findTables(s, joinSrc   , t.getSources());
+        collectCommaSources(s, t.getSources());
         return t;
     }
 
     private void findTables(String sql, Pattern p, Set<String> into) {
         Matcher m = p.matcher(sql);
         while (m.find()) {
-            String tableName = clean(m.group(1));
-            // 백틱 제거하여 키워드 체크
-            String nameWithoutBacktick = tableName.replaceAll("`", "");
-            // SQL 키워드가 아니고, 단일 문자가 아닌 경우만 추가
-            if (!SQL_KEYWORDS.contains(nameWithoutBacktick.toUpperCase()) && nameWithoutBacktick.length() > 1) {
-                into.add(tableName);
+            addIfValid(clean(m.group(1)), into);
+        }
+    }
+
+    private void collectCommaSources(String sql, Set<String> into) {
+        Matcher matcher = FROM_WITH_TAIL.matcher(sql);
+        while (matcher.find()) {
+            String tail = truncateAtClause(matcher.group(2));
+            Matcher comma = COMMA_TABLE.matcher(tail);
+            while (comma.find()) {
+                addIfValid(clean(comma.group(1)), into);
             }
+        }
+    }
+
+    private String truncateAtClause(String segment) {
+        Matcher breaker = CLAUSE_BREAK.matcher(segment);
+        return breaker.find() ? segment.substring(0, breaker.start()) : segment;
+    }
+
+    private void addIfValid(String tableName, Set<String> into) {
+        if (tableName == null || tableName.isEmpty()) return;
+        String nameWithoutBacktick = tableName.replace("`", "");
+        if (!SQL_KEYWORDS.contains(nameWithoutBacktick.toUpperCase()) && nameWithoutBacktick.length() > 1) {
+            into.add(tableName);
         }
     }
 
@@ -76,4 +99,3 @@ public class TableExtractor {
         return t;
     }
 }
-
