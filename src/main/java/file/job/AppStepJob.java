@@ -59,39 +59,41 @@ public class AppStepJob {
 
         Matcher matcher = stepPattern.matcher(sql);
 
-        int lastEnd = 0;
-        String currentStep = "STEP000";
-        StringBuilder currentSql = new StringBuilder();
+        int lastStart = 0;
+        String lastStep = null;
 
         while (matcher.find()) {
-            if (lastEnd > 0) {
-                String stepSql = currentSql.toString();
+            // 이전 STEP의 SQL 처리
+            if (lastStep != null) {
+                String stepSql = sql.substring(lastStart, matcher.start());
                 if (!stepSql.trim().isEmpty()) {
                     TablesInfo info = processor.parse(stepSql);
-                    stepTables.put(currentStep, info);
-                    System.out.println("[StepProcessor] " + currentStep +
+                    stepTables.put(lastStep, info);
+                    System.out.println("[StepProcessor] " + lastStep +
                                       " - Sources: " + info.getSources().size() +
                                       ", Targets: " + info.getTargets().size());
                 }
             }
 
+            // 현재 STEP 설정
             String stepNum = matcher.group(1) != null ? matcher.group(1) : matcher.group(2);
-            currentStep = "STEP" + String.format("%03d", Integer.parseInt(stepNum));
-            currentSql = new StringBuilder();
-            lastEnd = matcher.end();
+            lastStep = "STEP" + String.format("%03d", Integer.parseInt(stepNum));
+            lastStart = matcher.end();
         }
 
-        if (lastEnd > 0) {
-            String stepSql = sql.substring(lastEnd);
+        // 마지막 STEP 처리
+        if (lastStep != null) {
+            String stepSql = sql.substring(lastStart);
             if (!stepSql.trim().isEmpty()) {
                 TablesInfo info = processor.parse(stepSql);
-                stepTables.put(currentStep, info);
-                System.out.println("[StepProcessor] " + currentStep +
+                stepTables.put(lastStep, info);
+                System.out.println("[StepProcessor] " + lastStep +
                                   " - Sources: " + info.getSources().size() +
                                   ", Targets: " + info.getTargets().size());
             }
         }
 
+        // STEP 마커가 없는 경우
         if (stepTables.isEmpty()) {
             TablesInfo info = processor.parse(sql);
             stepTables.put("STEP000", info);
