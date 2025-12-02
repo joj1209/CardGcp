@@ -1,6 +1,6 @@
 package file.job;
 
-import file.processor.FileParserProcessor;
+import file.processor.FileStepParserProcessor;
 import file.reader.SqlReader;
 import file.writer.TextStepWriter;
 import file.vo.TablesInfo;
@@ -10,19 +10,22 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
+/**
+ * STEP별로 SQL 파일을 처리하는 Job 클래스
+ *
+ * 연결 구조:
+ * AppStepJob -> FileStepParserProcessor -> TableStepParser
+ */
 public class AppStepJob {
 
     private final Path inputPath;
     private final SqlReader reader;
-    private final FileParserProcessor processor;
+    private final FileStepParserProcessor processor;
     private final TextStepWriter writer;
 
-    public AppStepJob(Path inputPath, SqlReader reader, FileParserProcessor processor, TextStepWriter writer) {
+    public AppStepJob(Path inputPath, SqlReader reader, FileStepParserProcessor processor, TextStepWriter writer) {
         this.inputPath = inputPath;
         this.reader = reader;
         this.processor = processor;
@@ -32,7 +35,7 @@ public class AppStepJob {
     public static AppStepJob createJob() {
         Path input = Paths.get("D:", "11. Project", "11. DB", "BigQuery");
         SqlReader reader = new SqlReader(SqlReader.DEFAULT_CHARSET);
-        FileParserProcessor processor = FileParserProcessor.withDefaults();
+        FileStepParserProcessor processor = FileStepParserProcessor.withDefaults();
         TextStepWriter writer = new TextStepWriter(TextStepWriter.DEFAULT_OUTPUT_DIR, Charset.forName("UTF-8"));
         return new AppStepJob(input, reader, processor, writer);
     }
@@ -40,7 +43,7 @@ public class AppStepJob {
     public static AppStepJob createJob(String inputPath) {
         Path input = Paths.get(inputPath);
         SqlReader reader = new SqlReader(SqlReader.DEFAULT_CHARSET);
-        FileParserProcessor processor = FileParserProcessor.withDefaults();
+        FileStepParserProcessor processor = FileStepParserProcessor.withDefaults();
         TextStepWriter writer = new TextStepWriter(TextStepWriter.DEFAULT_OUTPUT_DIR, Charset.forName("UTF-8"));
         return new AppStepJob(input, reader, processor, writer);
     }
@@ -68,58 +71,23 @@ public class AppStepJob {
 
     private void processFile(Path file, String sql) {
         try {
-            Map<String, TablesInfo> stepTables = processSteps(sql);
+            Map<String, TablesInfo> stepTables = process(sql);
             write(file, stepTables);
         } catch (IOException ex) {
             System.err.println("Step file processing failed: " + file + " - " + ex.getMessage());
         }
     }
 
-    private Map<String, TablesInfo> processSteps(String sql) {
-        Map<String, TablesInfo> stepTables = new LinkedHashMap<>();
+    private Map<String, TablesInfo> process(String sql) {
+        Map<String, TablesInfo> stepTables = processor.parse(sql);
 
-        Pattern stepPattern = Pattern.compile(
-            "(?i)--\\s*STEP(\\d+)|/\\*\\s*STEP(\\d+)\\s*\\*/",
-            Pattern.CASE_INSENSITIVE
-        );
-
-        Matcher matcher = stepPattern.matcher(sql);
-
-        int lastStart = 0;
-        String lastStep = null;
-
-        while (matcher.find()) {
-            if (lastStep != null) {
-                String stepSql = sql.substring(lastStart, matcher.start());
-                if (!stepSql.trim().isEmpty()) {
-                    TablesInfo info = processor.parse(stepSql);
-                    stepTables.put(lastStep, info);
-                    System.out.println("[StepProcessor] " + lastStep +
-                                      " - Sources: " + info.getSources().size() +
-                                      ", Targets: " + info.getTargets().size());
-                }
-            }
-
-            String stepNum = matcher.group(1) != null ? matcher.group(1) : matcher.group(2);
-            lastStep = "STEP" + String.format("%03d", Integer.parseInt(stepNum));
-            lastStart = matcher.end();
-        }
-
-        if (lastStep != null) {
-            String stepSql = sql.substring(lastStart);
-            if (!stepSql.trim().isEmpty()) {
-                TablesInfo info = processor.parse(stepSql);
-                stepTables.put(lastStep, info);
-                System.out.println("[StepProcessor] " + lastStep +
-                                  " - Sources: " + info.getSources().size() +
-                                  ", Targets: " + info.getTargets().size());
-            }
-        }
-
-        if (stepTables.isEmpty()) {
-            TablesInfo info = processor.parse(sql);
-            stepTables.put("STEP000", info);
-            System.out.println("[StepProcessor] No step markers found, processing as STEP000");
+        // 각 STEP 처리 로그 출력
+        for (Map.Entry<String, TablesInfo> entry : stepTables.entrySet()) {
+            String stepName = entry.getKey();
+            TablesInfo info = entry.getValue();
+            System.out.println("[StepProcessor] " + stepName +
+                              " - Sources: " + info.getSources().size() +
+                              ", Targets: " + info.getTargets().size());
         }
 
         return stepTables;
