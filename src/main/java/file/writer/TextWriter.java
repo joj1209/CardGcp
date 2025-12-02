@@ -7,19 +7,16 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
  * 지정된 출력 디렉토리로 텍스트 파일을 기록하는 유틸리티입니다.
  */
 public class TextWriter {
-    public static final Path DEFAULT_OUTPUT_DIR = Paths.get("D:", "11. Project", "11. DB", "BigQuery_out");
-
     private final Path outputDir;
     private final Charset charset;
 
-    public TextWriter() {
-        this(DEFAULT_OUTPUT_DIR, StandardCharsets.UTF_8);
+    public TextWriter(Path outputDir) {
+        this(outputDir, StandardCharsets.UTF_8);
     }
 
     public TextWriter(Path outputDir, Charset charset) {
