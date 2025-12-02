@@ -1,0 +1,4 @@
+## 타겟 테이블 기준
+1.INSERT
+2.DELETE
+3.MERGE

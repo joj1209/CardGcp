@@ -1,0 +1,15 @@
+## 테이블명 패턴 기준
+ - `table`
+ - schema.`table`
+ - schema.table
+ - table
+
+## 제외할 SQL 키워드
+    private static final Set<String> KEYWORDS = new HashSet<>(Arrays.asList(
+        "SELECT", "FROM", "WHERE", "INSERT", "UPDATE", "DELETE", "JOIN", "LEFT", "RIGHT",
+        "INNER", "OUTER", "ON", "AND", "OR", "NOT", "IN", "EXISTS", "BETWEEN", "LIKE",
+        "ORDER", "GROUP", "BY", "HAVING", "LIMIT", "OFFSET", "UNION", "ALL", "DISTINCT",
+        "AS", "INTO", "VALUES", "SET", "CASCADE", "RESTRICT", "PUBLIC", "PRIVATE",
+        "GRANT", "REVOKE", "COMMIT", "ROLLBACK", "SAVEPOINT", "TRANSACTION", "BEGIN",
+        "END", "IF", "THEN", "ELSE", "CASE", "WHEN", "NULL", "TRUE", "FALSE", "USING"
+    ));
