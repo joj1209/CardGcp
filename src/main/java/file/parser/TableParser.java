@@ -29,11 +29,17 @@ public class TableParser {
         // 주석 제거
         String cleanedSql = removeComments(sql);
 
+        // WITH 절 CTE 별칭 추출 (제외할 목록)
+        Set<String> cteAliases = extractCteAliases(cleanedSql);
+
         // 타겟 테이블 추출
         extractTargetTables(cleanedSql, info.getTargets());
 
         // 소스 테이블 추출
         extractSourceTables(cleanedSql, info.getSources());
+
+        // CTE 별칭 제외
+        info.getSources().removeAll(cteAliases);
 
         return info;
     }
@@ -47,6 +53,50 @@ public class TableParser {
     private String removeComments(String sql) {
         return sql.replaceAll("(?s)/\\*.*?\\*/", " ")
                   .replaceAll("--.*?(\r?\n|$)", " ");
+    }
+
+    /**
+     * WITH 절의 CTE(Common Table Expression) 별칭을 추출합니다.
+     * 이 별칭들은 실제 테이블이 아니므로 소스 테이블에서 제외해야 합니다.
+     *
+     * 예: WITH `모수` AS (...), MOSU2 AS (...)
+     * 추출: `모수`, MOSU2
+     *
+     * @param sql SQL 문자열
+     * @return CTE 별칭 Set
+     */
+    private Set<String> extractCteAliases(String sql) {
+        Set<String> aliases = new java.util.HashSet<>();
+
+        // WITH alias AS 패턴
+        Pattern ctePattern = Pattern.compile(
+            "(?is)\\bWITH\\s+" + TableNamePattern.TABLE_NAME_REGEX + "\\s+AS\\s*\\("
+        );
+
+        Matcher matcher = ctePattern.matcher(sql);
+        while (matcher.find()) {
+            String alias = matcher.group(1);
+            String cleaned = TableNamePattern.cleanTableName(alias);
+            if (!cleaned.isEmpty()) {
+                aliases.add(cleaned);
+            }
+        }
+
+        // , alias AS 패턴 (WITH 절 내 추가 CTE)
+        Pattern additionalCtePattern = Pattern.compile(
+            "(?is),\\s*" + TableNamePattern.TABLE_NAME_REGEX + "\\s+AS\\s*\\("
+        );
+
+        matcher = additionalCtePattern.matcher(sql);
+        while (matcher.find()) {
+            String alias = matcher.group(1);
+            String cleaned = TableNamePattern.cleanTableName(alias);
+            if (!cleaned.isEmpty()) {
+                aliases.add(cleaned);
+            }
+        }
+
+        return aliases;
     }
 
     /**
