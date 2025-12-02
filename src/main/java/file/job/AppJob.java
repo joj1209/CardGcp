@@ -63,6 +63,10 @@ import java.nio.file.Paths;
  */
 public class AppJob {
 
+    // 기본 입력/출력 경로 (AppJob에서만 관리)
+    private static final Path DEFAULT_INPUT_PATH = Paths.get("D:", "11. Project", "11. DB", "BigQuery");
+    private static final Path DEFAULT_OUTPUT_PATH = Paths.get("D:", "11. Project", "11. DB", "BigQuery_out");
+
     /**
      * SQL 파일이 위치한 입력 디렉토리 경로입니다.
      * 이 디렉토리의 모든 .sql 파일이 처리 대상이 됩니다.
@@ -112,7 +116,7 @@ public class AppJob {
      * <ul>
      *   <li><b>입력 디렉토리</b>: D:\11. Project\11. DB\BigQuery</li>
      *   <li><b>입력 문자셋</b>: EUC-KR (SqlReader.DEFAULT_CHARSET)</li>
-     *   <li><b>출력 디렉토리</b>: D:\11. Project\11. DB\BigQuery_out (TextWriter.DEFAULT_OUTPUT_DIR)</li>
+     *   <li><b>출력 디렉토리</b>: D:\11. Project\11. DB\BigQuery_out</li>
      *   <li><b>출력 문자셋</b>: UTF-8</li>
      *   <li><b>파싱 옵션</b>: 기본 설정 (FileParserProcessor.withDefaults())</li>
      * </ul>
@@ -122,11 +126,10 @@ public class AppJob {
      * @return 기본 설정이 적용된 AppJob 인스턴스
      */
     public static AppJob createDefault() {
-        Path input = Paths.get("D:", "11. Project", "11. DB", "BigQuery");
         SqlReader reader = new SqlReader(SqlReader.DEFAULT_CHARSET);
         FileParserProcessor processor = FileParserProcessor.withDefaults();
-        TextWriter writer = new TextWriter(TextWriter.DEFAULT_OUTPUT_DIR, Charset.forName("UTF-8"));
-        return new AppJob(input, reader, processor, writer);
+        TextWriter writer = new TextWriter(DEFAULT_OUTPUT_PATH, Charset.forName("UTF-8"));
+        return new AppJob(DEFAULT_INPUT_PATH, reader, processor, writer);
     }
 
     /**
@@ -223,7 +226,7 @@ public class AppJob {
      * 
      * <h3>출력 파일 형식</h3>
      * <ul>
-     *   <li><b>파일명</b>: {원본파일명}_out.txt (예: sample.sql → sample_out.txt)</li>
+     *   <li><b>파일명</b>: {원본파일명}_sql_tables.txt (예: sample.sql → sample_sql_tables.txt)</li>
      *   <li><b>저장 위치</b>: TextWriter에 지정된 출력 디렉토리 (기본: D:\11. Project\11. DB\BigQuery_out)</li>
      *   <li><b>문자셋</b>: UTF-8 (기본값)</li>
      * </ul>
@@ -232,7 +235,7 @@ public class AppJob {
      * <pre>
      * [Source Tables]
      * 스키마.테이블명1
-     * 스키마.테이블명2
+     * 스��마.테이블명2
      * ...
      * 
      * [Target Tables]
@@ -245,11 +248,24 @@ public class AppJob {
      * @param info 저장할 테이블 정보 (소스 테이블 목록, 타겟 테이블 목록)
      * @throws IOException 파일 쓰기 작업 중 I/O 오류가 발생한 경우
      * 
-     * @see TextWriter#writeTables(Path, Path, TablesInfo)
+     * @see TextWriter#writeTables(String, TablesInfo)
      * @see TablesInfo
      */
     private void stepWrite(Path file, TablesInfo info) throws IOException {
-        writer.writeTables(inputDir, file, info);
+        String fileName = buildOutputFileName(file);
+        writer.writeTables(fileName, info);
+    }
+
+    /**
+     * 입력 파일명으로부터 출력 파일명을 생성합니다.
+     *
+     * @param file 입력 SQL 파일 경로
+     * @return 출력 파일명 (예: sample_sql_tables.txt)
+     */
+    private String buildOutputFileName(Path file) {
+        Path relative = inputDir.relativize(file);
+        String name = relative.toString().replace("\\", "/");
+        return name.replaceAll("\\.sql$", "_sql_tables.txt");
     }
 
     /**
