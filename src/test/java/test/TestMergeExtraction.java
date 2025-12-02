@@ -1,6 +1,6 @@
 package test;
 
-import file.parser.TableExtractor;
+import file.parser.TableParser;
 import file.vo.TablesInfo;
 
 public class TestMergeExtraction {
@@ -15,8 +15,8 @@ public class TestMergeExtraction {
                      "  WHEN MATCHED THEN UPDATE SET T.name = S.name;\n" +
                      "END;";
 
-        TableExtractor extractor = new TableExtractor();
-        TablesInfo info1 = extractor.extractTables(sql1);
+        TableParser parser = new TableParser();
+        TablesInfo info1 = parser.extractTables(sql1);
 
         System.out.println("=== 테스트 1: MERGE INTO ===");
         System.out.println("\n[Target Tables]");
