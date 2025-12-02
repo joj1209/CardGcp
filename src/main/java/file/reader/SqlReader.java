@@ -7,7 +7,6 @@ import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.stream.Stream;
 
 /**
@@ -15,7 +14,6 @@ import java.util.stream.Stream;
  * 다양한 인코딩을 다루면서 안전하게 내용을 가져올 때 사용합니다.
  */
 public class SqlReader {
-    private static final Path DEFAULT_INPUT_DIR = Paths.get("D:", "11. Project", "11. DB", "BigQuery");
     public static final Charset UTF8 = Charset.forName("UTF-8");
     public static final Charset DEFAULT_CHARSET = UTF8;
 
@@ -52,16 +50,6 @@ public class SqlReader {
         return dec.decode(ByteBuffer.wrap(bytes)).toString();
     }
 
-    /**
-     * 기본 입력 디렉토리에 상대 경로로 지정된 파일을 읽어들입니다.
-     *
-     * @param relativeFile 읽을 파일의 상대 경로
-     * @return 파일 내용 문자열
-     * @throws IOException 파일 읽기 중 문제가 발생한 경우
-     */
-    public String readFile(String relativeFile) throws IOException {
-        return readFile(DEFAULT_INPUT_DIR.resolve(relativeFile));
-    }
 
     /**
      * 입력 디렉터리를 순회하며 SQL 파일을 읽고 핸들러에 전달합니다.
