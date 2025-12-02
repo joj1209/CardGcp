@@ -6,11 +6,9 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Map;
 
 public class TextStepWriter {
-    public static final Path DEFAULT_OUTPUT_DIR = Paths.get("D:", "11. Project", "11. DB", "BigQuery_out");
 
     private final Path outputDir;
     private final Charset charset;

@@ -17,8 +17,16 @@ import java.util.Map;
  *
  * 연결 구조:
  * AppStepJob -> FileStepParserProcessor -> TableStepParser
+ *
+ * 경로 관리:
+ * - 입력 경로: DEFAULT_INPUT_PATH 또는 main 메소드 인자로 지정
+ * - 출력 경로: DEFAULT_OUTPUT_PATH
  */
 public class AppStepJob {
+
+    // 기본 입력/출력 경로 (AppStepJob에서만 관리)
+    private static final Path DEFAULT_INPUT_PATH = Paths.get("D:", "11. Project", "11. DB", "BigQuery");
+    private static final Path DEFAULT_OUTPUT_PATH = Paths.get("D:", "11. Project", "11. DB", "BigQuery_out");
 
     private final Path inputPath;
     private final SqlReader reader;
@@ -33,19 +41,18 @@ public class AppStepJob {
     }
 
     public static AppStepJob createJob() {
-        Path input = Paths.get("D:", "11. Project", "11. DB", "BigQuery");
-        SqlReader reader = new SqlReader(SqlReader.DEFAULT_CHARSET);
-        FileStepParserProcessor processor = FileStepParserProcessor.withDefaults();
-        TextStepWriter writer = new TextStepWriter(TextStepWriter.DEFAULT_OUTPUT_DIR, Charset.forName("UTF-8"));
-        return new AppStepJob(input, reader, processor, writer);
+        return createJob(DEFAULT_INPUT_PATH, DEFAULT_OUTPUT_PATH);
     }
 
     public static AppStepJob createJob(String inputPath) {
-        Path input = Paths.get(inputPath);
+        return createJob(Paths.get(inputPath), DEFAULT_OUTPUT_PATH);
+    }
+
+    public static AppStepJob createJob(Path inputPath, Path outputPath) {
         SqlReader reader = new SqlReader(SqlReader.DEFAULT_CHARSET);
         FileStepParserProcessor processor = FileStepParserProcessor.withDefaults();
-        TextStepWriter writer = new TextStepWriter(TextStepWriter.DEFAULT_OUTPUT_DIR, Charset.forName("UTF-8"));
-        return new AppStepJob(input, reader, processor, writer);
+        TextStepWriter writer = new TextStepWriter(outputPath, Charset.forName("UTF-8"));
+        return new AppStepJob(inputPath, reader, processor, writer);
     }
 
     public void execute() {

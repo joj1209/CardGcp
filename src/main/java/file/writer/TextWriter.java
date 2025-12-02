@@ -29,24 +29,8 @@ public class TextWriter {
 
     public Path write(String relativeFile, String content) throws IOException {
         Path target = outputDir.resolve(relativeFile);
-        System.out.println("[Writer] Creating output directory: " + target.getParent());
         Files.createDirectories(target.getParent());
-        System.out.println("[Writer] Writing file: " + target.getFileName());
-        Path result = Files.write(target, content.getBytes(charset));
-        System.out.println("[Writer] File write completed: " + target);
-        return result;
-    }
-
-    /**
-     * 입력 루트 대비 상대 경로를 유지하면서 테이블 정보를 파일로 기록합니다.
-     */
-    public Path writeTables(Path inputDir, Path file, TablesInfo info) throws IOException {
-        System.out.println("[Writer] Processing table info: " + file.getFileName());
-        String relativeName = buildOutputName(inputDir, file);
-        System.out.println("[Writer] Generated output filename: " + relativeName);
-        System.out.println("[Writer] Source tables: " + info.getSources().size() +
-                          ", Target tables: " + info.getTargets().size());
-        return writeTables(relativeName, info);
+        return Files.write(target, content.getBytes(charset));
     }
 
     /**
@@ -57,12 +41,9 @@ public class TextWriter {
     }
 
     public Path writeTables(String relativeFile, service.scan.model.TablesInfo info) throws IOException {
-        System.out.println("[Writer] Converting service.scan.model.TablesInfo to file.vo.TablesInfo...");
         TablesInfo converted = new TablesInfo();
         info.getSources().forEach(converted::addSource);
         info.getTargets().forEach(converted::addTarget);
-        System.out.println("[Writer] Conversion completed - Sources: " + converted.getSources().size() +
-                          ", Targets: " + converted.getTargets().size());
         return writeTables(relativeFile, converted);
     }
 
@@ -73,10 +54,5 @@ public class TextWriter {
         sb.append("\n[Target Tables]\n");
         info.getTargets().forEach(t -> sb.append(t).append('\n'));
         return sb.toString();
-    }
-
-    private String buildOutputName(Path inputDir, Path file) {
-        Path relative = inputDir.relativize(file);
-        return relative.toString().replace('.', '_') + "_tables.txt";
     }
 }
