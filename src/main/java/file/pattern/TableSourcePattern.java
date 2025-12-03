@@ -55,7 +55,16 @@ public class TableSourcePattern {
      * FROM ... WHERE/GROUP/ORDER/HAVING/UNION/LIMIT/;/$
      */
     public static final String FROM_CLAUSE_RANGE_PATTERN =
-        "(?is)\\bFROM\\s+(.*?)(?=\\s+WHERE|\\s+GROUP|\\s+ORDER|\\s+HAVING|\\s+UNION|\\s+LIMIT|;|$)";
+            "(?is)\\bFROM\\s+(.*?)(?=\\s+WHERE"
+                    + "|\\s+GROUP\\b"
+                    + "|\\s+ORDER\\b"
+                    + "|\\s+HAVING\\b"
+                    + "|\\s+UNION\\b"
+                    + "|\\s+LIMIT\\b"
+                    + "|\\s+SELECT\\b"
+                    + "|\\)"
+                    + "|;|$)";
+
 
     /**
      * 모든 소스 패턴 배열

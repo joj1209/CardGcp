@@ -203,23 +203,54 @@ public class TableParser {
      */
     private void extractOracleJoin(String sql, Set<String> sources) {
         Pattern pattern = Pattern.compile(TableSourcePattern.FROM_CLAUSE_RANGE_PATTERN);
-
         Matcher matcher = pattern.matcher(sql);
-        while (matcher.find()) {
-            String fromClause = matcher.group(1);
 
-            // JOIN 키워드 이전까지만 처리
+        while (matcher.find()) {
+            // 1) 문자열 리터럴 안의 FROM 은 무시
+            if (isInsideSingleQuotes(sql, matcher.start())) {
+                continue;
+            }
+
+            String fromClause = matcher.group(1);
+            if (fromClause == null) continue;
+
+            fromClause = fromClause.trim();
+            if (fromClause.isEmpty()) continue;
+
+            String upper = fromClause.toUpperCase();
+
+            // 2) 서브쿼리 / 인라인뷰 / CTE 가 섞인 경우는 여기서 처리하지 않음
+            if (upper.contains("SELECT") || upper.contains("WITH")) {
+                continue;
+            }
+
+
+            // 3) JOIN 키워드 이전까지만 처리
             int joinPos = fromClause.toUpperCase().indexOf("JOIN");
             if (joinPos > 0) {
                 fromClause = fromClause.substring(0, joinPos);
             }
 
-            // 콤마로 구분된 테이블 추출
+            // 4) 콤마로 구분된 테이블 추출
             String[] tables = fromClause.split(",");
             for (String table : tables) {
                 extractFirstTable(table.trim(), sources);
             }
         }
+    }
+
+    /**
+     * 주어진 index 위치가 작은따옴표(') 기준으로
+     * 문자열 리터럴 내부인지 여부를 판단
+     */
+    private boolean isInsideSingleQuotes(String sql, int index) {
+        boolean inside = false;
+        for (int i = 0; i < index; i++) {
+            if (sql.charAt(i) == '\'') {
+                inside = !inside; // ' 만날 때마다 안/밖 토글
+            }
+        }
+        return inside;
     }
 
     /**
