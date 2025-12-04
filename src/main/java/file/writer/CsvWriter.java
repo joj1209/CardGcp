@@ -117,6 +117,7 @@ public class CsvWriter {
 
     /**
      * 모든 레코드를 CSV 파일로 저장합니다.
+     * UTF-8 BOM을 추가하여 엑셀에서 한글이 정상적으로 표시되도록 합니다.
      *
      * @throws IOException 파일 쓰기 중 오류 발생 시
      */
@@ -129,6 +130,11 @@ public class CsvWriter {
 
         try (BufferedWriter writer = Files.newBufferedWriter(outputPath, charset,
                 StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
+
+            // UTF-8 BOM 추가 (엑셀에서 한글 깨짐 방지)
+            if (charset.name().equalsIgnoreCase("UTF-8")) {
+                writer.write('\ufeff');
+            }
 
             // 헤더 작성
             writeHeaders(writer);
