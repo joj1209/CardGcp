@@ -2,6 +2,7 @@ package file.job;
 
 import file.processor.FileParserProcessor;
 import file.reader.SqlReader;
+import file.writer.CsvWriter;
 import file.writer.TextWriter;
 import file.vo.TablesInfo;
 
@@ -92,6 +93,11 @@ public class AppJob {
     private final TextWriter writer;
 
     /**
+     * CSV 형식으로 전체 결과를 저장하는 CsvWriter 인스턴스입니다.
+     */
+    private final CsvWriter csvWriter;
+
+    /**
      * AppJob 인스턴스를 생성합니다.
      *
      * <p>각 단계(Reader, Processor, Writer)를 외부에서 주입받아 유연하게 구성할 수 있습니다.
@@ -101,12 +107,14 @@ public class AppJob {
      * @param reader SQL 파일을 읽는 SqlReader 인스턴스 (null 불가)
      * @param processor SQL을 파싱하는 FileParserProcessor 인스턴스 (null 불가)
      * @param writer 결과를 출력하는 TextWriter 인스턴스 (null 불가)
+     * @param csvWriter CSV로 결과를 출력하는 CsvWriter 인스턴스 (null 불가)
      */
-    public AppJob(Path inputDir, SqlReader reader, FileParserProcessor processor, TextWriter writer) {
+    public AppJob(Path inputDir, SqlReader reader, FileParserProcessor processor, TextWriter writer, CsvWriter csvWriter) {
         this.inputDir = inputDir;
         this.reader = reader;
         this.processor = processor;
         this.writer = writer;
+        this.csvWriter = csvWriter;
     }
 
     /**
@@ -118,6 +126,7 @@ public class AppJob {
      *   <li><b>입력 문자셋</b>: EUC-KR (SqlReader.DEFAULT_CHARSET)</li>
      *   <li><b>출력 디렉토리</b>: D:\11. Project\11. DB\BigQuery_out</li>
      *   <li><b>출력 문자셋</b>: UTF-8</li>
+     *   <li><b>CSV 파일</b>: D:\11. Project\11. DB\BigQuery_out\summary.csv</li>
      *   <li><b>파싱 옵션</b>: 기본 설정 (FileParserProcessor.withDefaults())</li>
      * </ul>
      *
@@ -129,7 +138,9 @@ public class AppJob {
         SqlReader reader = new SqlReader(SqlReader.DEFAULT_CHARSET);
         FileParserProcessor processor = FileParserProcessor.withDefaults();
         TextWriter writer = new TextWriter(DEFAULT_OUTPUT_PATH, Charset.forName("UTF-8"));
-        return new AppJob(DEFAULT_INPUT_PATH, reader, processor, writer);
+        Path csvPath = DEFAULT_OUTPUT_PATH.resolve("summary.csv");
+        CsvWriter csvWriter = new CsvWriter(csvPath, Charset.forName("UTF-8"));
+        return new AppJob(DEFAULT_INPUT_PATH, reader, processor, writer, csvWriter);
     }
 
     /**
@@ -141,6 +152,7 @@ public class AppJob {
      *   <li>각 파일을 지정된 문자셋(기본: EUC-KR)으로 읽어들입니다.</li>
      *   <li>읽은 파일 경로와 내용을 {@link #handleFile(Path, String)} 메서드로 전달합니다.</li>
      *   <li>handleFile 메서드에서 STEP2(파싱)와 STEP3(출력)이 순차적으로 실행됩니다.</li>
+     *   <li>모든 파일 처리가 완료되면 CSV 파일을 저장합니다.</li>
      * </ol>
      *
      * <p>처리 흐름:</p>
@@ -148,14 +160,31 @@ public class AppJob {
      * stepRead()
      *   → SqlReader.run()
      *   → 각 파일마다 handleFile() 호출
-     *   → stepParse() + stepWrite()
+     *   → stepParse() + stepWrite() + CSV 레코드 추가
+     *   → 모든 파일 처리 완료 후 CSV 파일 저장
      * </pre>
      *
      * @see SqlReader#run(Path, SqlReader.SqlFileHandler)
      * @see #handleFile(Path, String)
      */
     public void stepRead() {
+        System.out.println("========================================");
+        System.out.println("Starting SQL file processing...");
+        System.out.println("Input directory: " + inputDir);
+        System.out.println("========================================");
+
         reader.run(inputDir, this::handleFile);
+
+        // 모든 파일 처리 후 CSV 파일 저장
+        try {
+            csvWriter.write();
+            System.out.println("========================================");
+            System.out.println("CSV file saved successfully.");
+            System.out.println("Total records: " + csvWriter.getRecordCount());
+            System.out.println("========================================");
+        } catch (IOException ex) {
+            System.err.println("Failed to save CSV file: " + ex.getMessage());
+        }
     }
 
     /**
@@ -170,6 +199,7 @@ public class AppJob {
      *       소스/타겟 테이블 정보를 추출합니다.</li>
      *   <li><b>STEP3 실행</b>: {@link #stepWrite(Path, TablesInfo)}를 호출하여
      *       추출된 정보를 결과 파일로 저장합니다.</li>
+     *   <li><b>CSV 레코드 추가</b>: CSV 파일에 레코드를 추가합니다.</li>
      * </ol>
      *
      * <h3>예외 처리</h3>
@@ -186,8 +216,12 @@ public class AppJob {
         try {
             TablesInfo info = stepParse(sql);
             stepWrite(file, info);
+
+            // CSV 레코드 추가
+            String fileName = file.getFileName().toString();
+            csvWriter.addRecord(fileName, info);
         } catch (IOException ex) {
-            System.err.println("파일 처리 실패: " + file + " - " + ex.getMessage());
+            System.err.println("File processing failed: " + file + " - " + ex.getMessage());
         }
     }
 
@@ -276,6 +310,7 @@ public class AppJob {
      *   <li>{@link #createDefault()}를 호출하여 기본 설정의 AppJob 인스턴스를 생성합니다.</li>
      *   <li>{@link #stepRead()}를 호출하여 SQL 파일 읽기 및 처리를 시작합니다.</li>
      *   <li>입력 디렉토리의 모든 .sql 파일에 대해 파싱 및 출력 작업이 순차적으로 실행됩니다.</li>
+     *   <li>모든 파일 처리 완료 후 CSV 요약 파일(summary.csv)이 생성됩니다.</li>
      * </ol>
      *
      * <h3>실행 방법</h3>
@@ -288,10 +323,12 @@ public class AppJob {
      * main 메서드를 수정하여 다음과 같이 사용할 수 있습니다:</p>
      * <pre>
      * Path customInput = Paths.get("D:", "custom", "input");
+     * Path customOutput = Paths.get("D:", "custom", "output");
      * SqlReader customReader = new SqlReader(Charset.forName("UTF-8"));
      * FileParserProcessor customProcessor = FileParserProcessor.withDefaults();
-     * TextWriter customWriter = new TextWriter(Paths.get("D:", "custom", "output"), Charset.forName("UTF-8"));
-     * AppJob customJob = new AppJob(customInput, customReader, customProcessor, customWriter);
+     * TextWriter customWriter = new TextWriter(customOutput, Charset.forName("UTF-8"));
+     * CsvWriter customCsvWriter = new CsvWriter(customOutput.resolve("summary.csv"), Charset.forName("UTF-8"));
+     * AppJob customJob = new AppJob(customInput, customReader, customProcessor, customWriter, customCsvWriter);
      * customJob.stepRead();
      * </pre>
      *
