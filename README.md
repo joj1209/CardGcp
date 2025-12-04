@@ -53,10 +53,16 @@ java -cp target/classes convert.ConvertStep2
 
 ## 💻 IntelliJ IDEA에서 실행하기
 
-### 빠른 실행 방법
+### 빠른 실행 방법 (모든 버전)
+1. **상단 툴바에서 Run Configuration 선택**: AppJob, AppStepJob, ScanSourceTarget 등
+2. 초록색 실행 버튼 클릭 또는 `Shift + F10`
+
+### Run Dashboard (얼티메이트 버전 전용)
 1. **Run Dashboard 열기**: `Alt + 5`
-2. 실행할 애플리케이션 선택 (AppJob, AppStepJob, ScanSourceTarget 등)
+2. 실행할 애플리케이션 선택
 3. 초록색 실행 버튼 클릭 또는 `Shift + F10`
+
+> **참고**: 커뮤니티 버전은 Run Dashboard를 지원하지 않지만, 툴바의 Run Configuration 드롭다운으로 동일하게 실행 가능합니다.
 
 자세한 내용은 [Run Dashboard 가이드](docs/intellij-run-dashboard-guide.md)를 참고하세요.
 - [서비스 스캔 문서](docs/service-scan.md)
