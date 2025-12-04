@@ -49,6 +49,16 @@ java -cp target/classes convert.ConvertStep2
 ## 📚 문서
 
 - [로그 모듈 사용 가이드](docs/logger-guide.md)
+- [IntelliJ IDEA Run Dashboard 사용 가이드](docs/intellij-run-dashboard-guide.md)
+
+## 💻 IntelliJ IDEA에서 실행하기
+
+### 빠른 실행 방법
+1. **Run Dashboard 열기**: `Alt + 5`
+2. 실행할 애플리케이션 선택 (AppJob, AppStepJob, ScanSourceTarget 등)
+3. 초록색 실행 버튼 클릭 또는 `Shift + F10`
+
+자세한 내용은 [Run Dashboard 가이드](docs/intellij-run-dashboard-guide.md)를 참고하세요.
 - [서비스 스캔 문서](docs/service-scan.md)
 
 ## 📁 프로젝트 구조
