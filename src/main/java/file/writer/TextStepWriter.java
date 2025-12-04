@@ -40,17 +40,17 @@ public class TextStepWriter {
             sb.append("=".repeat(60)).append("\n\n");
 
             sb.append("[Source Tables]\n");
-            if (info.getSources().isEmpty()) {
+            if (info.getSortedSources().isEmpty()) {
                 sb.append("(No source tables)\n");
             } else {
-                info.getSources().forEach(t -> sb.append(t).append("\n"));
+                info.getSortedSources().forEach(t -> sb.append(t).append("\n"));
             }
 
             sb.append("\n[Target Tables]\n");
-            if (info.getTargets().isEmpty()) {
+            if (info.getSortedTargets().isEmpty()) {
                 sb.append("(No target tables)\n");
             } else {
-                info.getTargets().forEach(t -> sb.append(t).append("\n"));
+                info.getSortedTargets().forEach(t -> sb.append(t).append("\n"));
             }
 
             sb.append("\n");

@@ -47,9 +47,9 @@ public class TextWriter {
     private String formatTables(TablesInfo info) {
         StringBuilder sb = new StringBuilder();
         sb.append("[Source Tables]\n");
-        info.getSources().forEach(t -> sb.append(t).append('\n'));
+        info.getSortedSources().forEach(t -> sb.append(t).append('\n'));
         sb.append("\n[Target Tables]\n");
-        info.getTargets().forEach(t -> sb.append(t).append('\n'));
+        info.getSortedTargets().forEach(t -> sb.append(t).append('\n'));
         return sb.toString();
     }
 }

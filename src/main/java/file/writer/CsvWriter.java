@@ -67,8 +67,8 @@ public class CsvWriter {
     public void addRecord(String fileName, TablesInfo tablesInfo) {
         CsvRecord record = new CsvRecord();
         record.put("File Name", fileName);
-        record.put("Source Tables", joinTables(tablesInfo.getSources()));
-        record.put("Target Tables", joinTables(tablesInfo.getTargets()));
+        record.put("Source Tables", joinTables(tablesInfo.getSortedSources()));
+        record.put("Target Tables", joinTables(tablesInfo.getSortedTargets()));
         records.add(record);
     }
 
@@ -82,8 +82,8 @@ public class CsvWriter {
     public void addRecord(String fileName, TablesInfo tablesInfo, Map<String, String> additionalFields) {
         CsvRecord record = new CsvRecord();
         record.put("File Name", fileName);
-        record.put("Source Tables", joinTables(tablesInfo.getSources()));
-        record.put("Target Tables", joinTables(tablesInfo.getTargets()));
+        record.put("Source Tables", joinTables(tablesInfo.getSortedSources()));
+        record.put("Target Tables", joinTables(tablesInfo.getSortedTargets()));
 
         // 추가 필드 설정
         if (additionalFields != null) {

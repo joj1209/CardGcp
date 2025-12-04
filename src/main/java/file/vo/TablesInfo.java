@@ -1,7 +1,6 @@
 package file.vo;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Source/Target 테이블 목록을 보관하는 VO.
@@ -16,6 +15,24 @@ public class TablesInfo {
 
     public Set<String> getTargets() {
         return targets;
+    }
+
+    /**
+     * 정렬된 소스 테이블 목록을 반환합니다.
+     *
+     * @return 알파벳순으로 정렬된 소스 테이블 Set
+     */
+    public Set<String> getSortedSources() {
+        return new TreeSet<>(sources);
+    }
+
+    /**
+     * 정렬된 타겟 테이블 목록을 반환합니다.
+     *
+     * @return 알파벳순으로 정렬된 타겟 테이블 Set
+     */
+    public Set<String> getSortedTargets() {
+        return new TreeSet<>(targets);
     }
 
     public boolean isEmpty() {
