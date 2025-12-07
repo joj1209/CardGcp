@@ -14,7 +14,7 @@ ScanSourceTarget (entry)
 
 ---
 
-## 1. 엔트리 포인트: `service.ScanSourceTarget`
+## 1. 엔트리 포인트: `service.scanSourceTarget.analyze.ScanSourceTarget`
 | 목적 | SRC_ROOT(`D:\11. Project\11. DB`) 아래 *.sql 전부 스캔해 OUT_ROOT(`D:\11. Project\11. DB_OUT3`)에 리포트 작성 |
 |------|--------------------------------------------------------------------------------------------------------------|
 | 핵심 흐름 | 입력·출력 경로 검증 → `SqlFileProcessor` / `SqlFileScanner` 생성 → `scanDirectory` 호출 |

@@ -1,6 +1,6 @@
 package test;
 
-import file.job.AppStepJob;
+import service.file.job.AppStepJob;
 
 /**
  * AppStepJob 테스트

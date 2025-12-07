@@ -121,23 +121,27 @@ System.out.println("Total STEPs: " + count); // 출력: Total STEPs: 7
 ## 사용 예시
 
 ### 기본 사용법
+
 ```java
-import file.parser.TableStepParser;
-import file.vo.TablesInfo;
+import service.file.parser.TableStepParser;
+import service.file.vo.TablesInfo;
+
 import java.util.Map;
 
 // SQL 파일 읽기
 String sql = Files.readString(Paths.get("sample.sql"));
 
-// 파서 생성
-TableStepParser parser = new TableStepParser();
+        // 파서 생성
+        TableStepParser parser = new TableStepParser();
 
-// STEP별 테이블 추출
-Map<String, TablesInfo> stepTables = parser.extractTablesByStep(sql);
+        // STEP별 테이블 추출
+        Map<String, TablesInfo> stepTables = parser.extractTablesByStep(sql);
 
-// 결과 출력
-String formatted = parser.formatStepTables(stepTables);
-System.out.println(formatted);
+        // 결과 출력
+        String formatted = parser.formatStepTables(stepTables);
+System.out.
+
+        println(formatted);
 ```
 
 ### 특정 STEP 조회

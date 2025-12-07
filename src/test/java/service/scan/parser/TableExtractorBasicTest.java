@@ -1,6 +1,7 @@
 package service.scan.parser;
 
-import service.scan.model.TablesInfo;
+import service.scanSourceTarget.analyze.scan.model.TablesInfo;
+import service.scanSourceTarget.analyze.scan.parser.TableExtractor;
 
 /**
  * TableExtractor 기본 기능 테스트

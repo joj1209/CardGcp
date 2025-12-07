@@ -1,7 +1,7 @@
 package test;
 
-import file.parser.TableParser;
-import file.vo.TablesInfo;
+import service.file.parser.TableParser;
+import service.file.vo.TablesInfo;
 
 public class TestCteExclusion {
     public static void main(String[] args) {
