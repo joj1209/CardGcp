@@ -1,6 +1,6 @@
 package service.scanSourceTarget.analyze.scan.processor;
 
-import java.com.log.AppLogger;
+import com.log.AppLogger;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -27,9 +27,9 @@ public class SqlFileScanner {
         log.sqlScanStart(root.toString());
 
         final int[] cnt = {0};
-        Files.walkFileTree(root, new SimpleFileVisitor<Path>() {
+        Files.walkFileTree(root, new SimpleFileVisitor<>() {
             @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
                 if (file.getFileName().toString().toLowerCase().endsWith(ext)) {
                     try {
                         processor.processFile(file);

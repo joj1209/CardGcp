@@ -1,6 +1,6 @@
 package com.cardgcp;
 
-import java.com.log.AppLogger;
+import com.log.AppLogger;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;

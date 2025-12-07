@@ -190,7 +190,7 @@ public class ConvertStep1 {
 ```java
 package convert;
 
-import java.com.log.AppLogger;
+import com.log.AppLogger;
 
 public class SimpleSourceTarget {
     

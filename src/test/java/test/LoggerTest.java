@@ -1,6 +1,6 @@
 package test;
 
-import java.com.log.AppLogger;
+import com.log.AppLogger;
 
 public class LoggerTest {
     private static final AppLogger log = AppLogger.getLogger(LoggerTest.class);
