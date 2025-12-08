@@ -1,6 +1,6 @@
-package service.scanSourceTarget.analyze.scan.parser;
+package service.scanSourceTarget.scan.parser;
 
-import service.scanSourceTarget.analyze.scan.model.TablesInfo;
+import service.scanSourceTarget.scan.model.TablesInfo;
 
 import java.util.Set;
 import java.util.regex.Matcher;

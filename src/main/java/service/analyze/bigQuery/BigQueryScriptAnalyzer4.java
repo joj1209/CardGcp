@@ -1,4 +1,4 @@
-package service.scanSourceTarget.analyze.BigQuery;
+package service.analyze.bigQuery;
 
 // BigQueryScriptAnalyzer.java
 

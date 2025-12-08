@@ -1,4 +1,4 @@
-package service.scanSourceTarget.analyze.scan.model;
+package service.scanSourceTarget.scan.model;
 
 import java.util.LinkedHashSet;
 import java.util.Set;

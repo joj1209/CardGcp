@@ -1,4 +1,4 @@
-package service.scanSourceTarget.analyze.sql;
+package service.analyze.sql;
 
 import java.io.IOException;
 import java.nio.charset.Charset;

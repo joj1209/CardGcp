@@ -1,4 +1,4 @@
-package service.scanSourceTarget.analyze;
+package service.analyze;
 
 import java.util.HashSet;
 import java.util.Set;

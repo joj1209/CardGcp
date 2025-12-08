@@ -78,7 +78,7 @@ IntelliJ IDEA에서 자주 실행하는 애플리케이션을 쉽게 관리하�
 - **출력**: 텍스트 파일 (`*_step_tables.txt`)
 
 ### 3. **ScanSourceTarget**
-- **클래스**: `service.scanSourceTarget.analyze.ScanSourceTarget`
+- **클래스**: `service.scanSourceTarget.ScanSourceTarget`
 - **용도**: 소스/타겟 테이블 스캔 및 분석
 
 ---

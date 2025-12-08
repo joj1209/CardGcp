@@ -1,9 +1,9 @@
-package service.scanSourceTarget.analyze.scan.processor;
+package service.scanSourceTarget.scan.processor;
 
-import service.scanSourceTarget.analyze.scan.model.TablesInfo;
-import service.scanSourceTarget.analyze.scan.io.FileReaderUtil;
-import service.scanSourceTarget.analyze.scan.io.ReportGenerator;
-import service.scanSourceTarget.analyze.scan.parser.TableExtractor;
+import service.scanSourceTarget.scan.model.TablesInfo;
+import service.scanSourceTarget.scan.io.FileReaderUtil;
+import service.scanSourceTarget.scan.io.ReportGenerator;
+import service.scanSourceTarget.scan.parser.TableExtractor;
 
 import java.io.IOException;
 import java.nio.file.*;

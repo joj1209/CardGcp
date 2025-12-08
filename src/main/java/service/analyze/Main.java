@@ -1,4 +1,4 @@
-package service.scanSourceTarget.analyze;
+package service.analyze;
 
 import java.io.IOException;
 import java.nio.file.Path;

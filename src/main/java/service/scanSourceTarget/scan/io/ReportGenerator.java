@@ -1,6 +1,6 @@
-package service.scanSourceTarget.analyze.scan.io;
+package service.scanSourceTarget.scan.io;
 
-import service.scanSourceTarget.analyze.scan.model.TablesInfo;
+import service.scanSourceTarget.scan.model.TablesInfo;
 
 import java.nio.file.Path;
 

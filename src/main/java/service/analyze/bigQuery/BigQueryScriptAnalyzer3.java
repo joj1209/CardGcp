@@ -1,4 +1,4 @@
-package service.scanSourceTarget.analyze.BigQuery;
+package service.analyze.bigQuery;
 
 import java.io.*;
 import java.util.*;

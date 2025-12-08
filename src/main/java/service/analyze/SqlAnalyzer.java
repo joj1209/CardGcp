@@ -1,4 +1,4 @@
-package service.scanSourceTarget.analyze;
+package service.analyze;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

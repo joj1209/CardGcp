@@ -1,4 +1,4 @@
-package service.scanSourceTarget.analyze.scan.io;
+package service.scanSourceTarget.scan.io;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

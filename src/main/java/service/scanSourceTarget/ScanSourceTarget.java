@@ -1,7 +1,7 @@
-package service.scanSourceTarget.analyze;
+package service.scanSourceTarget;
 
-import service.scanSourceTarget.analyze.scan.processor.SqlFileProcessor;
-import service.scanSourceTarget.analyze.scan.processor.SqlFileScanner;
+import service.scanSourceTarget.scan.processor.SqlFileProcessor;
+import service.scanSourceTarget.scan.processor.SqlFileScanner;
 
 import java.nio.file.*;
 

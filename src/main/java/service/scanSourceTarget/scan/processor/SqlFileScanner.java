@@ -1,4 +1,4 @@
-package service.scanSourceTarget.analyze.scan.processor;
+package service.scanSourceTarget.scan.processor;
 
 import com.log.AppLogger;
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package service.scanSourceTarget.analyze.sql;
+package service.analyze.sql;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
