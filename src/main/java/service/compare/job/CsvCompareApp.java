@@ -57,6 +57,11 @@ public class CsvCompareApp {
                     throw new IllegalStateException("헤더가 비어 있습니다.");
                 }
                 String defaultKey = t1.getHeaders().get(0);
+                System.out.println("t1.getHeaders(): " + t1.getHeaders());
+                System.out.println("t2.getHeaders(): " + t2.getHeaders());
+
+
+
                 if (!new HashSet<>(t2.getHeaders()).contains(defaultKey)) {
                     throw new IllegalStateException("키 컬럼이 지정되지 않았고, 두 파일의 첫 헤더가 다릅니다. 키를 명시하세요. 예) ID 또는 ID,DATE");
                 }
