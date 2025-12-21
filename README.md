@@ -4,7 +4,7 @@ SQL 파일 변환 및 분석 도구
 
 ## 📋 주요 기능
 
-### 1. SQL 파일 변환 (convert 패키지)
+### 1. SQL 파일 변환 (dev 패키지)
 - **ConvertStep1**: 주석 내 백틱(`) 제거
 - **ConvertStep2**: 다중 옵션 선택 변환 (EUCKR→UTF8, 백틱 제거)
 - **ConvertStep2Comment**: 상세 주석 포함 변환
@@ -30,20 +30,20 @@ SQL 파일 변환 및 분석 도구
 
 ### 테이블 추출
 ```bash
-javac -encoding UTF-8 -d target/classes -sourcepath src/main/java src/main/java/convert/SimpleSourceTarget.java
-java -cp target/classes convert.SimpleSourceTarget
+javac -encoding UTF-8 -d target/classes -sourcepath src/main/java src/main/java/dev/SimpleSourceTarget.java
+java -cp target/classes dev.SimpleSourceTarget
 ```
 
 ### SQL 파일 변환
 ```bash
-javac -encoding UTF-8 -d target/classes -sourcepath src/main/java src/main/java/convert/ConvertStep1.java
+javac -encoding UTF-8 -d target/classes -sourcepath src/main/java src/main/java/dev/ConvertStep1.java
 java -cp target/classes com.cardgcp.ConvertStep1
 ```
 
 ### 다중 옵션 변환
 ```bash
-javac -encoding UTF-8 -d target/classes -sourcepath src/main/java src/main/java/convert/ConvertStep2.java
-java -cp target/classes convert.ConvertStep2
+javac -encoding UTF-8 -d target/classes -sourcepath src/main/java src/main/java/dev/ConvertStep2.java
+java -cp target/classes dev.ConvertStep2
 ```
 
 ## 📚 문서
@@ -73,7 +73,7 @@ java -cp target/classes convert.ConvertStep2
 src/main/java/
 ├── com/log/             # 공통 로그 모듈
 │   └── AppLogger.java
-├── convert/             # SQL 변환 도구
+├── dev/             # SQL 변환 도구
 │   ├── ConvertStep1.java
 │   ├── ConvertStep2.java
 │   ├── ConvertStep2Comment.java

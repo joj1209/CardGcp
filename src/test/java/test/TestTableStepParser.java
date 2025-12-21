@@ -1,7 +1,7 @@
 package test;
 
-import service.file.parser.TableStepParser;
-import service.file.vo.TablesInfo;
+import service.queryParser.parser.TableStepParser;
+import service.queryParser.vo.TablesInfo;
 
 import java.io.IOException;
 import java.nio.file.Files;

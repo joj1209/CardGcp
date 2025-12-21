@@ -188,34 +188,34 @@ public class ConvertStep1 {
 ### 예제 2: SimpleSourceTarget (테이블 추출)
 
 ```java
-package convert;
+package dev;
 
 import com.log.AppLogger;
 
 public class SimpleSourceTarget {
-    
+
     private static final AppLogger log = AppLogger.getLogger(SimpleSourceTarget.class);
-    
+
     public static void main(String[] args) throws Exception {
         log.start("Source/Target 테이블 추출");
-        
+
         String directory = "D:\\11. Project\\11. DB";
         log.sqlScanStart(directory);
-        
+
         int fileCount = 0;
         // 스캔 로직
-        
+
         log.sqlScanEnd(fileCount);
         log.end("Source/Target 테이블 추출", fileCount);
     }
-    
+
     private static void scanFile(Path sqlFile) throws IOException {
         log.fileStart(sqlFile.getFileName().toString());
-        
+
         // 테이블 추출 로직
         int sourceCount = 5;
         int targetCount = 3;
-        
+
         log.tableExtracted(sqlFile.getFileName().toString(), sourceCount, targetCount);
     }
 }
@@ -394,9 +394,9 @@ try {
 ## 🔗 관련 파일
 
 - `com/log/AppLogger.java` - 로그 모듈 소스
-- `convert/SimpleSourceTarget.java` - 사용 예제 1
-- `convert/ConvertStep1.java` - 사용 예제 2
-- `convert/ConvertStep2.java` - 사용 예제 3
+- `dev/SimpleSourceTarget.java` - 사용 예제 1
+- `dev/ConvertStep1.java` - 사용 예제 2
+- `dev/ConvertStep2.java` - 사용 예제 3
 - `service/scan/processor/SqlFileScanner.java` - 사용 예제 4
 
 ---

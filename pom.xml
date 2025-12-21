@@ -56,7 +56,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>service.compare.job.CsvCompareApp</mainClass>
+                            <mainClass>service.csvCompare.job.CsvCompareApp</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

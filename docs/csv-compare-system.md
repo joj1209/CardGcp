@@ -6,7 +6,7 @@
 ## 패키지 구조
 
 ```
-service.compare/
+service.csvCompare/
 ├── job/
 │   └── CsvCompareApp.java          # 메인 진입점
 ├── io/
@@ -29,7 +29,7 @@ service.compare/
 
 ### 1. CsvCompareApp (메인 진입점)
 
-**위치**: `service.compare.job.CsvCompareApp`
+**위치**: `service.csvCompare.job.CsvCompareApp`
 
 #### 주요 기능
 - CSV 파일 2개를 입력받아 비교 수행
@@ -38,7 +38,7 @@ service.compare/
 
 #### 실행 방법
 ```bash
-java service.compare.job.CsvCompareApp <file1.csv> <file2.csv> [key1,key2,...]
+java service.csvCompare.job.CsvCompareApp <file1.csv> <file2.csv> [key1,key2,...]
 ```
 
 **파라미터**:
@@ -49,13 +49,13 @@ java service.compare.job.CsvCompareApp <file1.csv> <file2.csv> [key1,key2,...]
 **예시**:
 ```bash
 # 첫 번째 헤더를 키로 사용 (자동)
-java service.compare.job.CsvCompareApp data1.csv data2.csv
+java service.csvCompare.job.CsvCompareApp data1.csv data2.csv
 
 # ID 컬럼을 키로 사용
-java service.compare.job.CsvCompareApp data1.csv data2.csv ID
+java service.csvCompare.job.CsvCompareApp data1.csv data2.csv ID
 
 # ID와 DATE 복합키로 사용
-java service.compare.job.CsvCompareApp data1.csv data2.csv ID,DATE
+java service.csvCompare.job.CsvCompareApp data1.csv data2.csv ID,DATE
 ```
 
 #### 주요 로직
@@ -97,7 +97,7 @@ java service.compare.job.CsvCompareApp data1.csv data2.csv ID,DATE
 
 ### 2. CsvReader (CSV 파일 읽기)
 
-**위치**: `service.compare.io.CsvReader`
+**위치**: `service.csvCompare.io.CsvReader`
 
 #### 주요 기능
 - RFC 4180 표준을 준수하는 CSV 파싱
@@ -139,7 +139,7 @@ Line2"
 
 ### 3. CsvWriter (CSV 파일 쓰기)
 
-**위치**: `service.compare.io.CsvWriter`
+**위치**: `service.csvCompare.io.CsvWriter`
 
 #### 주요 기능
 - RFC 4180 표준 CSV 생성
@@ -173,7 +173,7 @@ Line2"
 
 ### 4. CsvComparator (테이블 비교 로직)
 
-**위치**: `service.compare.process.CsvComparator`
+**위치**: `service.csvCompare.process.CsvComparator`
 
 #### 주요 기능
 - 두 CSV 테이블을 키 기반으로 비교
@@ -221,7 +221,7 @@ CsvTable을 키-행 매핑으로 변환
 
 ### 5. KeyStrategy (키 생성 전략)
 
-**위치**: `service.compare.process.KeyStrategy`
+**위치**: `service.csvCompare.process.KeyStrategy`
 
 #### 인터페이스 정의
 ```java
@@ -239,7 +239,7 @@ public interface KeyStrategy {
 
 ### 6. CompositeKeyStrategy (복합 키 구현)
 
-**위치**: `service.compare.process.CompositeKeyStrategy`
+**위치**: `service.csvCompare.process.CompositeKeyStrategy`
 
 #### 주요 기능
 - 여러 컬럼을 조합하여 복합 키 생성
@@ -275,7 +275,7 @@ rowValues = {ID: "1001", DATE: "2025-12-07", NAME: "John"}
 
 ### 7. CsvTable (테이블 모델)
 
-**위치**: `service.compare.model.CsvTable`
+**위치**: `service.csvCompare.model.CsvTable`
 
 #### 구조
 ```java
@@ -298,7 +298,7 @@ public class CsvTable {
 
 ### 8. DataRow (데이터 행 모델)
 
-**위치**: `service.compare.model.DataRow`
+**위치**: `service.csvCompare.model.DataRow`
 
 #### 구조
 ```java
@@ -320,7 +320,7 @@ public class DataRow {
 
 ### 9. OutputRow (출력 행 모델)
 
-**위치**: `service.compare.model.OutputRow`
+**위치**: `service.csvCompare.model.OutputRow`
 
 #### 구조
 ```java
@@ -350,7 +350,7 @@ CSV 출력을 위한 필드 리스트 생성
 
 ### 10. ResultType (비교 결과 타입)
 
-**위치**: `service.compare.model.ResultType`
+**위치**: `service.csvCompare.model.ResultType`
 
 #### Enum 정의
 ```java
@@ -461,7 +461,7 @@ ID,NAME,AGE
 
 **실행**:
 ```bash
-java service.compare.job.CsvCompareApp file1.csv file2.csv ID
+java service.csvCompare.job.CsvCompareApp file1.csv file2.csv ID
 ```
 
 **result_file1.csv**:
@@ -493,7 +493,7 @@ DATE,STORE_ID,PRODUCT,AMOUNT
 
 **실행**:
 ```bash
-java service.compare.job.CsvCompareApp sales1.csv sales2.csv DATE,STORE_ID,PRODUCT
+java service.csvCompare.job.CsvCompareApp sales1.csv sales2.csv DATE,STORE_ID,PRODUCT
 ```
 
 **result_sales1.csv**:

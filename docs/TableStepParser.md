@@ -123,8 +123,8 @@ System.out.println("Total STEPs: " + count); // 출력: Total STEPs: 7
 ### 기본 사용법
 
 ```java
-import service.file.parser.TableStepParser;
-import service.file.vo.TablesInfo;
+import service.queryParser.parser.TableStepParser;
+import service.queryParser.vo.TablesInfo;
 
 import java.util.Map;
 

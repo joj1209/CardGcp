@@ -1,6 +1,6 @@
 package test;
 
-import service.file.job.AppStepJob;
+import service.queryParser.job.AppStepJob;
 
 /**
  * AppStepJob 테스트

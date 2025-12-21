@@ -5,7 +5,7 @@
 - **JAR 파일명**: `csv-compare-app.jar`
 - **위치**: `target/csv-compare-app.jar`
 - **크기**: 약 10.8MB
-- **메인 클래스**: `service.compare.job.CsvCompareApp`
+- **메인 클래스**: `service.csvCompare.job.CsvCompareApp`
 - **필요 환경**: Java Runtime Environment (JRE) 8 이상
 
 ---
