@@ -2,6 +2,7 @@ package service.queryParser.job;
 
 import service.queryParser.processor.FileStepParserProcessor;
 import service.queryParser.reader.SqlReader;
+import service.queryParser.writer.CsvWriter;
 import service.queryParser.writer.TextStepWriter;
 import service.queryParser.vo.TablesInfo;
 
@@ -32,12 +33,14 @@ public class AppStepJob {
     private final SqlReader reader;
     private final FileStepParserProcessor processor;
     private final TextStepWriter writer;
+    private final CsvWriter csvWriter;
 
-    public AppStepJob(Path inputPath, SqlReader reader, FileStepParserProcessor processor, TextStepWriter writer) {
+    public AppStepJob(Path inputPath, SqlReader reader, FileStepParserProcessor processor, TextStepWriter writer, CsvWriter csvWriter) {
         this.inputPath = inputPath;
         this.reader = reader;
         this.processor = processor;
         this.writer = writer;
+        this.csvWriter = csvWriter;
     }
 
     public static AppStepJob createJob() {
@@ -52,7 +55,9 @@ public class AppStepJob {
         SqlReader reader = new SqlReader(SqlReader.DEFAULT_CHARSET);
         FileStepParserProcessor processor = FileStepParserProcessor.withDefaults();
         TextStepWriter writer = new TextStepWriter(outputPath, Charset.forName("UTF-8"));
-        return new AppStepJob(inputPath, reader, processor, writer);
+        Path csvPath = outputPath.resolve("step_summary.csv");
+        CsvWriter csvWriter = new CsvWriter(csvPath, Charset.forName("UTF-8"));
+        return new AppStepJob(inputPath, reader, processor, writer, csvWriter);
     }
 
     public void execute() {
@@ -64,6 +69,17 @@ public class AppStepJob {
             processSingleFile(inputPath);
         } else {
             System.err.println("[AppStepJob] Invalid path (not a file or directory): " + inputPath);
+        }
+
+        // 모든 파일 처리 후 CSV 파일 저장
+        try {
+            csvWriter.write();
+            System.out.println("========================================");
+            System.out.println("[AppStepJob] CSV file saved successfully.");
+            System.out.println("[AppStepJob] Total records: " + csvWriter.getRecordCount());
+            System.out.println("========================================");
+        } catch (IOException ex) {
+            System.err.println("[AppStepJob] Failed to save CSV file: " + ex.getMessage());
         }
     }
 
@@ -80,6 +96,15 @@ public class AppStepJob {
         try {
             Map<String, TablesInfo> stepTables = process(sql);
             write(file, stepTables);
+
+            // CSV 레코드 추가 (각 STEP별로)
+            String fileName = file.getFileName().toString();
+            for (Map.Entry<String, TablesInfo> entry : stepTables.entrySet()) {
+                String stepName = entry.getKey();
+                TablesInfo info = entry.getValue();
+                // 파일명에 STEP명을 추가하여 구분
+                csvWriter.addRecord(fileName + " - " + stepName, info);
+            }
         } catch (IOException ex) {
             System.err.println("Step file processing failed: " + file + " - " + ex.getMessage());
         }
