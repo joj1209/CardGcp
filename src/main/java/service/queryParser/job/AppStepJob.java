@@ -2,7 +2,7 @@ package service.queryParser.job;
 
 import service.queryParser.processor.FileStepParserProcessor;
 import service.queryParser.reader.SqlReader;
-import service.queryParser.writer.CsvWriter;
+import service.queryParser.writer.CsvStepWriter;
 import service.queryParser.writer.TextStepWriter;
 import service.queryParser.vo.TablesInfo;
 
@@ -33,9 +33,9 @@ public class AppStepJob {
     private final SqlReader reader;
     private final FileStepParserProcessor processor;
     private final TextStepWriter writer;
-    private final CsvWriter csvWriter;
+    private final CsvStepWriter csvWriter;
 
-    public AppStepJob(Path inputPath, SqlReader reader, FileStepParserProcessor processor, TextStepWriter writer, CsvWriter csvWriter) {
+    public AppStepJob(Path inputPath, SqlReader reader, FileStepParserProcessor processor, TextStepWriter writer, CsvStepWriter csvWriter) {
         this.inputPath = inputPath;
         this.reader = reader;
         this.processor = processor;
@@ -56,7 +56,7 @@ public class AppStepJob {
         FileStepParserProcessor processor = FileStepParserProcessor.withDefaults();
         TextStepWriter writer = new TextStepWriter(outputPath, Charset.forName("UTF-8"));
         Path csvPath = outputPath.resolve("step_summary.csv");
-        CsvWriter csvWriter = new CsvWriter(csvPath, Charset.forName("UTF-8"));
+        CsvStepWriter csvWriter = new CsvStepWriter(csvPath, Charset.forName("UTF-8"));
         return new AppStepJob(inputPath, reader, processor, writer, csvWriter);
     }
 
@@ -97,14 +97,9 @@ public class AppStepJob {
             Map<String, TablesInfo> stepTables = process(sql);
             write(file, stepTables);
 
-            // CSV 레코드 추가 (각 STEP별로)
+            // CSV 레코드 추가 (파일별로 모든 STEP 정보를 집계)
             String fileName = file.getFileName().toString();
-            for (Map.Entry<String, TablesInfo> entry : stepTables.entrySet()) {
-                String stepName = entry.getKey();
-                TablesInfo info = entry.getValue();
-                // 파일명에 STEP명을 추가하여 구분
-                csvWriter.addRecord(fileName + " - " + stepName, info);
-            }
+            csvWriter.addFileSteps(fileName, stepTables);
         } catch (IOException ex) {
             System.err.println("Step file processing failed: " + file + " - " + ex.getMessage());
         }
