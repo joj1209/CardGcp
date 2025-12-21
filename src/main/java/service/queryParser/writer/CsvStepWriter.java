@@ -172,7 +172,7 @@ public class CsvStepWriter {
         public void addStep(String stepName, TablesInfo tablesInfo) {
             allSources.addAll(tablesInfo.getSources());
             allTargets.addAll(tablesInfo.getTargets());
-            steps.add(new StepInfo(stepName, tablesInfo.getSources().size(), tablesInfo.getTargets().size()));
+            steps.add(new StepInfo(stepName, tablesInfo));
         }
 
         public Set<String> getAllSources() {
@@ -194,9 +194,9 @@ public class CsvStepWriter {
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < steps.size(); i++) {
                 if (i > 0) {
-                    sb.append(" | ");
+                    sb.append("\n\n");
                 }
-                sb.append(steps.get(i).toString());
+                sb.append(steps.get(i).toDetailString());
             }
             return sb.toString();
         }
@@ -207,18 +207,52 @@ public class CsvStepWriter {
      */
     private static class StepInfo {
         private final String stepName;
-        private final int sourceCount;
-        private final int targetCount;
+        private final TablesInfo tablesInfo;
 
-        public StepInfo(String stepName, int sourceCount, int targetCount) {
+        public StepInfo(String stepName, TablesInfo tablesInfo) {
             this.stepName = stepName;
-            this.sourceCount = sourceCount;
-            this.targetCount = targetCount;
+            this.tablesInfo = tablesInfo;
+        }
+
+        /**
+         * STEP의 상세 정보를 포맷팅하여 반환합니다.
+         */
+        public String toDetailString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("============================================================\n");
+            sb.append(stepName).append("\n");
+            sb.append("============================================================\n");
+
+            // Source Tables
+            sb.append("[Source Tables]\n");
+            Set<String> sources = tablesInfo.getSortedSources();
+            if (sources.isEmpty()) {
+                sb.append("(No source tables)\n");
+            } else {
+                for (String source : sources) {
+                    sb.append(source).append("\n");
+                }
+            }
+
+            sb.append("\n");
+
+            // Target Tables
+            sb.append("[Target Tables]\n");
+            Set<String> targets = tablesInfo.getSortedTargets();
+            if (targets.isEmpty()) {
+                sb.append("(No target tables)\n");
+            } else {
+                for (String target : targets) {
+                    sb.append(target).append("\n");
+                }
+            }
+
+            return sb.toString();
         }
 
         @Override
         public String toString() {
-            return stepName + "(S:" + sourceCount + ",T:" + targetCount + ")";
+            return stepName + "(S:" + tablesInfo.getSources().size() + ",T:" + tablesInfo.getTargets().size() + ")";
         }
     }
 }
