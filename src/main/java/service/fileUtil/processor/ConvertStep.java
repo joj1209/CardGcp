@@ -1,6 +1,6 @@
 package service.fileUtil.processor;
 
-public class ConvertEncoding {
+public class ConvertStep {
 
     public String process(String content) {
         // 현재는 그대로 반환

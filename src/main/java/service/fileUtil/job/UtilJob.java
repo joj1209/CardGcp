@@ -1,6 +1,6 @@
 package service.fileUtil.job;
 
-import service.fileUtil.processor.ConvertEncoding;
+import service.fileUtil.processor.ConvertStep;
 import service.fileUtil.reader.SqlReader;
 import service.fileUtil.writer.SqlWriter;
 
@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 public class UtilJob {
     static SqlReader reader = new SqlReader();
     static SqlWriter writer = new SqlWriter();
-    static ConvertEncoding processor = new ConvertEncoding();
+    static ConvertStep processor = new ConvertStep();
 
     public static void main(String[] args) throws IOException {
         System.out.println("------- UtilJob started -------");
