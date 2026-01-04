@@ -16,12 +16,16 @@ public class UtilJob {
     public static void main(String[] args) throws IOException {
         System.out.println("------- UtilJob started -------");
 
-        if (args.length == 0) {
-            System.err.println("Usage: java UtilJob <file_or_directory_path>");
+        if (args.length < 2) {
+            System.err.println("Usage: java UtilJob <input_path> <output_path>");
             return;
         }
 
-        Path path = Paths.get(args[0]);
+        Path inputPath = Paths.get(args[0]);
+        Path outputPath = Paths.get(args[1]);
+
+        System.out.println("Input Path: " + inputPath.toAbsolutePath());
+        System.out.println("Output Path: " + outputPath.toAbsolutePath());
 
         // 사용자 선택 프롬프트
         System.out.println("\n========================================");
@@ -38,15 +42,15 @@ public class UtilJob {
         switch (choice) {
             case "1":
                 System.out.println("\n>>> Converting: EUC-KR -> UTF-8\n");
-                converter.convert(path, SqlReader.EUCKR, SqlReader.UTF8);
+                converter.convert(inputPath, outputPath, SqlReader.EUCKR, SqlReader.UTF8);
                 break;
             case "2":
                 System.out.println("\n>>> Converting: UTF-8 -> EUC-KR\n");
-                converter.convert(path, SqlReader.UTF8, SqlReader.EUCKR);
+                converter.convert(inputPath, outputPath, SqlReader.UTF8, SqlReader.EUCKR);
                 break;
             case "3":
                 System.out.println("\n>>> Read only mode (no conversion)\n");
-                reader.run(path);
+                reader.run(inputPath);
                 break;
             default:
                 System.err.println("Invalid choice: " + choice);
