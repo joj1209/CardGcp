@@ -17,8 +17,6 @@ public class ConvertEncoding {
     }
 
     public void convert(Path inputPath, Path outputPath, Charset fromCharset, Charset toCharset) throws IOException {
-        // outputPath 디렉토리 생성
-        writer.ensureDirectoryExists(outputPath);
 
         if (Files.isDirectory(inputPath)) {
             convertDirectory(inputPath, outputPath, fromCharset, toCharset);
