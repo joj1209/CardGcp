@@ -7,16 +7,13 @@ import service.fileUtil.writer.SqlWriter;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.stream.Stream;
 
 public class UtilJob {
     static SqlReader reader = new SqlReader();
-    static ConvertEncoding converter = new ConvertEncoding();
     static SqlWriter writer = new SqlWriter();
+    static ConvertEncoding converter = new ConvertEncoding(writer);
 
     public static void main(String[] args) throws IOException {
         System.out.println("------- UtilJob started -------");
@@ -47,11 +44,11 @@ public class UtilJob {
         switch (choice) {
             case "1":
                 System.out.println("\n>>> Converting: EUC-KR -> UTF-8\n");
-                processConversion(inputPath, outputPath, SqlReader.EUCKR, SqlReader.UTF8);
+                converter.processConversion(inputPath, outputPath, SqlReader.EUCKR, SqlReader.UTF8);
                 break;
             case "2":
                 System.out.println("\n>>> Converting: UTF-8 -> EUC-KR\n");
-                processConversion(inputPath, outputPath, SqlReader.UTF8, SqlReader.EUCKR);
+                converter.processConversion(inputPath, outputPath, SqlReader.UTF8, SqlReader.EUCKR);
                 break;
             case "3":
                 System.out.println("\n>>> Read only mode (no conversion)\n");
@@ -63,49 +60,6 @@ public class UtilJob {
         }
 
         System.out.println("\n------- UtilJob finished -------");
-    }
-
-    private static void processConversion(Path inputPath, Path outputPath, Charset fromCharset, Charset toCharset) throws IOException {
-        if (Files.isDirectory(inputPath)) {
-            processDirectory(inputPath, outputPath, fromCharset, toCharset);
-        } else if (Files.isRegularFile(inputPath)) {
-            processFile(inputPath, outputPath, fromCharset, toCharset);
-        } else {
-            throw new IllegalArgumentException("Invalid path: " + inputPath);
-        }
-    }
-
-    private static void processDirectory(Path inputDir, Path outputDir, Charset fromCharset, Charset toCharset) throws IOException {
-        System.out.println("Converting directory: " + inputDir.toAbsolutePath());
-        System.out.println("Output directory: " + outputDir.toAbsolutePath());
-        System.out.println("From: " + fromCharset.name() + " -> To: " + toCharset.name());
-
-        try (Stream<Path> paths = Files.walk(inputDir)) {
-            paths.filter(Files::isRegularFile)
-                    .filter(p -> p.getFileName().toString().endsWith(".sql"))
-                    .forEach(inputFile -> {
-                        try {
-                            // 1. 읽기 + 변환 (Processor)
-                            String content = converter.convert(inputFile, fromCharset);
-
-                            // 2. 경로 계산 + 쓰기 + 로그 (Writer)
-                            writer.writeWithRelativePath(inputFile, inputDir, outputDir, content, fromCharset, toCharset);
-                        } catch (IOException e) {
-                            System.err.println("Failed to convert file: " + inputFile + " - " + e.getMessage());
-                        }
-                    });
-        }
-    }
-
-    private static void processFile(Path inputFile, Path outputPath, Charset fromCharset, Charset toCharset) throws IOException {
-        // 1. 읽기 + 변환 (Processor)
-        String content = converter.convert(inputFile, fromCharset);
-
-        // 2. 경로 계산 (Writer)
-        Path outputFile = writer.resolveOutputFile(inputFile, outputPath);
-
-        // 3. 쓰기 + 로그 (Writer)
-        writer.writeWithLog(inputFile, outputFile, content, fromCharset, toCharset);
     }
 }
 
