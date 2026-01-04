@@ -22,10 +22,7 @@ public class ConvertEncoding {
         } else if (Files.isRegularFile(inputPath)) {
             String content = readAndConvert(inputPath, fromCharset);
             Path outputFile = writer.resolveOutputFile(inputPath, outputPath);
-            writer.write(outputFile, content, toCharset);
-            System.out.println("✓ Converted: " + inputPath.getFileName() +
-                             " (" + fromCharset.name() + " -> " + toCharset.name() + ")" +
-                             " -> " + outputFile.toAbsolutePath());
+            writer.writeWithLog(inputPath, outputFile, content, fromCharset, toCharset);
         } else {
             throw new IllegalArgumentException("Invalid path: " + inputPath);
         }
@@ -41,18 +38,8 @@ public class ConvertEncoding {
                     .filter(p -> p.getFileName().toString().endsWith(".sql"))
                     .forEach(inputFile -> {
                         try {
-                            // 인코딩 변환
                             String content = readAndConvert(inputFile, fromCharset);
-
-                            // 출력 파일 경로 계산 (SqlWriter에 위임)
-                            Path outputFile = writer.resolveOutputFileWithRelativePath(inputFile, inputDir, outputDir);
-
-                            // 파일 쓰기
-                            writer.write(outputFile, content, toCharset);
-
-                            System.out.println("✓ Converted: " + inputFile.getFileName() +
-                                             " (" + fromCharset.name() + " -> " + toCharset.name() + ")" +
-                                             " -> " + outputFile.toAbsolutePath());
+                            writer.writeWithRelativePath(inputFile, inputDir, outputDir, content, fromCharset, toCharset);
                         } catch (IOException e) {
                             System.err.println("Failed to convert file: " + inputFile + " - " + e.getMessage());
                         }
@@ -61,7 +48,6 @@ public class ConvertEncoding {
     }
 
     private String readAndConvert(Path inputFile, Charset fromCharset) throws IOException {
-        // 원본 파일 읽기 (fromCharset으로)
         return Files.readString(inputFile, fromCharset);
     }
 }

@@ -17,6 +17,24 @@ public class SqlWriter {
         Files.writeString(outputFile, content, charset);
     }
 
+    public void writeWithLog(Path inputFile, Path outputFile, String content, Charset fromCharset, Charset toCharset) throws IOException {
+        // 파일 쓰기
+        write(outputFile, content, toCharset);
+
+        // 로그 출력
+        System.out.println("✓ Converted: " + inputFile.getFileName() +
+                         " (" + fromCharset.name() + " -> " + toCharset.name() + ")" +
+                         " -> " + outputFile.toAbsolutePath());
+    }
+
+    public void writeWithRelativePath(Path inputFile, Path inputDir, Path outputDir, String content, Charset fromCharset, Charset toCharset) throws IOException {
+        // 출력 파일 경로 계산
+        Path outputFile = resolveOutputFileWithRelativePath(inputFile, inputDir, outputDir);
+
+        // 파일 쓰기 + 로그
+        writeWithLog(inputFile, outputFile, content, fromCharset, toCharset);
+    }
+
     public void ensureDirectoryExists(Path directory) throws IOException {
         if (!Files.exists(directory)) {
             Files.createDirectories(directory);
