@@ -22,4 +22,17 @@ public class SqlWriter {
             Files.createDirectories(directory);
         }
     }
+
+    public Path resolveOutputFile(Path inputFile, Path outputPath) {
+        if (Files.isDirectory(outputPath)) {
+            return outputPath.resolve(inputFile.getFileName());
+        } else {
+            return outputPath;
+        }
+    }
+
+    public Path resolveOutputFileWithRelativePath(Path inputFile, Path inputDir, Path outputDir) {
+        Path relativePath = inputDir.relativize(inputFile);
+        return outputDir.resolve(relativePath);
+    }
 }

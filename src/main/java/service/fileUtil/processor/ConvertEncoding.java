@@ -17,12 +17,11 @@ public class ConvertEncoding {
     }
 
     public void convert(Path inputPath, Path outputPath, Charset fromCharset, Charset toCharset) throws IOException {
-
         if (Files.isDirectory(inputPath)) {
             convertDirectory(inputPath, outputPath, fromCharset, toCharset);
         } else if (Files.isRegularFile(inputPath)) {
             String content = readAndConvert(inputPath, fromCharset);
-            Path outputFile = resolveOutputFile(inputPath, outputPath);
+            Path outputFile = writer.resolveOutputFile(inputPath, outputPath);
             writer.write(outputFile, content, toCharset);
             System.out.println("✓ Converted: " + inputPath.getFileName() +
                              " (" + fromCharset.name() + " -> " + toCharset.name() + ")" +
@@ -45,9 +44,8 @@ public class ConvertEncoding {
                             // 인코딩 변환
                             String content = readAndConvert(inputFile, fromCharset);
 
-                            // 출력 파일 경로 계산
-                            Path relativePath = inputDir.relativize(inputFile);
-                            Path outputFile = outputDir.resolve(relativePath);
+                            // 출력 파일 경로 계산 (SqlWriter에 위임)
+                            Path outputFile = writer.resolveOutputFileWithRelativePath(inputFile, inputDir, outputDir);
 
                             // 파일 쓰기
                             writer.write(outputFile, content, toCharset);
@@ -65,14 +63,6 @@ public class ConvertEncoding {
     private String readAndConvert(Path inputFile, Charset fromCharset) throws IOException {
         // 원본 파일 읽기 (fromCharset으로)
         return Files.readString(inputFile, fromCharset);
-    }
-
-    private Path resolveOutputFile(Path inputFile, Path outputPath) {
-        if (Files.isDirectory(outputPath)) {
-            return outputPath.resolve(inputFile.getFileName());
-        } else {
-            return outputPath;
-        }
     }
 }
 
