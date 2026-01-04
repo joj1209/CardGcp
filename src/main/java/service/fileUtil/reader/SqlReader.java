@@ -11,6 +11,10 @@ public class SqlReader {
     public static final Charset EUCKR = Charset.forName("EUC-KR");
     public static final Charset DEFAULT_CHARSET = UTF8;
 
+    public String read(Path inputFile, Charset charset) throws IOException {
+        return Files.readString(inputFile, charset);
+    }
+
     public void run(Path inputPath) throws IOException {
         if (Files.isDirectory(inputPath)) {
             processDirectory(inputPath);
