@@ -1,5 +1,6 @@
 package service.fileUtil.job;
 
+import service.fileUtil.converter.ConvertEncoding;
 import service.fileUtil.reader.SqlReader;
 
 import java.io.BufferedReader;
@@ -10,6 +11,7 @@ import java.nio.file.Paths;
 
 public class UtilJob {
     static SqlReader reader = new SqlReader();
+    static ConvertEncoding converter = new ConvertEncoding();
 
     public static void main(String[] args) throws IOException {
         System.out.println("------- UtilJob started -------");
@@ -36,11 +38,11 @@ public class UtilJob {
         switch (choice) {
             case "1":
                 System.out.println("\n>>> Converting: EUC-KR -> UTF-8\n");
-                reader.convertEncoding(path, SqlReader.EUCKR, SqlReader.UTF8);
+                converter.convert(path, SqlReader.EUCKR, SqlReader.UTF8);
                 break;
             case "2":
                 System.out.println("\n>>> Converting: UTF-8 -> EUC-KR\n");
-                reader.convertEncoding(path, SqlReader.UTF8, SqlReader.EUCKR);
+                converter.convert(path, SqlReader.UTF8, SqlReader.EUCKR);
                 break;
             case "3":
                 System.out.println("\n>>> Read only mode (no conversion)\n");
