@@ -11,8 +11,11 @@ public class ConvertEncoding {
         // - 특정 문자열 치환 등
         return content;
     }
+
+    public String removeTrailingSpaces(String content) {
+        if (content == null) return null;
+        return java.util.Arrays.stream(content.split("\n", -1))
+                .map(line -> line.replaceAll("\\s+$", ""))
+                .collect(java.util.stream.Collectors.joining("\n"));
+    }
 }
-
-
-
-
