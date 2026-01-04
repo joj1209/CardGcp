@@ -1,11 +1,10 @@
 package service.fileUtil.reader;
 
-import service.fileUtil.common.FileTraverser;
-
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.stream.Stream;
 
 public class SqlReader {
     public static final Charset UTF8 = Charset.forName("UTF-8");
@@ -17,7 +16,28 @@ public class SqlReader {
     }
 
     public void run(Path inputPath) throws IOException {
-        FileTraverser.traverse(inputPath, this::processFile);
+        if (Files.isDirectory(inputPath)) {
+            processDirectory(inputPath);
+        } else if (Files.isRegularFile(inputPath)) {
+            processFile(inputPath);
+        } else {
+            throw new IllegalArgumentException("Invalid path: " + inputPath);
+        }
+    }
+
+    private void processDirectory(Path directory) throws IOException {
+        System.out.println("Processing directory: " + directory.toAbsolutePath());
+        try (Stream<Path> paths = Files.walk(directory)) {
+            paths.filter(Files::isRegularFile)
+                    .filter(p -> p.getFileName().toString().endsWith(".sql"))
+                    .forEach(path -> {
+                        try {
+                            processFile(path);
+                        } catch (IOException e) {
+                            System.err.println("Failed to process file: " + path + " - " + e.getMessage());
+                        }
+                    });
+        }
     }
 
     private void processFile(Path file) throws IOException {

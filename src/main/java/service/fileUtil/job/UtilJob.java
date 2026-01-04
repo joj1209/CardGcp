@@ -1,6 +1,5 @@
 package service.fileUtil.job;
 
-import service.fileUtil.common.FileTraverser;
 import service.fileUtil.processor.ConvertStep;
 import service.fileUtil.reader.SqlReader;
 import service.fileUtil.writer.SqlWriter;
@@ -9,9 +8,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 public class UtilJob {
     static SqlReader reader = new SqlReader();
@@ -71,22 +72,50 @@ public class UtilJob {
     }
 
     private static void processConversion(Path inputPath, Path outputPath, Charset fromCharset, Charset toCharset, Function<String, String> transformer) throws IOException {
-        FileTraverser.traverse(inputPath, inputFile -> {
-            // Step 1: Read
-            String content = reader.read(inputFile, fromCharset);
+        if (Files.isDirectory(inputPath)) {
+            processDirectory(inputPath, outputPath, fromCharset, toCharset, transformer);
+        } else if (Files.isRegularFile(inputPath)) {
+            processFile(inputPath, outputPath, fromCharset, toCharset, transformer);
+        } else {
+            throw new IllegalArgumentException("Invalid path: " + inputPath);
+        }
+    }
 
-            // Step 2: Process
-            String processedContent = transformer.apply(content);
+    private static void processDirectory(Path inputDir, Path outputDir, Charset fromCharset, Charset toCharset, Function<String, String> transformer) throws IOException {
+        System.out.println("Converting directory: " + inputDir.toAbsolutePath());
+        System.out.println("Output directory: " + outputDir.toAbsolutePath());
+        System.out.println("From: " + fromCharset.name() + " -> To: " + toCharset.name());
 
-            // Step 3: Write
-            // inputPath가 디렉토리인 경우와 파일인 경우를 구분하여 상대 경로 계산
-            if (inputPath.toFile().isDirectory()) {
-                writer.writeWithRelativePath(inputFile, inputPath, outputPath, processedContent, fromCharset, toCharset);
-            } else {
-                Path outputFile = writer.resolveOutputFile(inputFile, outputPath);
-                writer.writeWithLog(inputFile, outputFile, processedContent, fromCharset, toCharset);
-            }
-        });
+        try (Stream<Path> paths = Files.walk(inputDir)) {
+            paths.filter(Files::isRegularFile)
+                    .filter(p -> p.getFileName().toString().endsWith(".sql"))
+                    .forEach(inputFile -> {
+                        try {
+                            // Step 1: Read
+                            String content = reader.read(inputFile, fromCharset);
+
+                            // Step 2: Process
+                            String processedContent = transformer.apply(content);
+
+                            // Step 3: Write
+                            writer.writeWithRelativePath(inputFile, inputDir, outputDir, processedContent, fromCharset, toCharset);
+                        } catch (IOException e) {
+                            System.err.println("Failed to convert file: " + inputFile + " - " + e.getMessage());
+                        }
+                    });
+        }
+    }
+
+    private static void processFile(Path inputFile, Path outputPath, Charset fromCharset, Charset toCharset, Function<String, String> transformer) throws IOException {
+        // Step 1: Read
+        String content = reader.read(inputFile, fromCharset);
+
+        // Step 2: Process
+        String processedContent = transformer.apply(content);
+
+        // Step 3: Write
+        Path outputFile = writer.resolveOutputFile(inputFile, outputPath);
+        writer.writeWithLog(inputFile, outputFile, processedContent, fromCharset, toCharset);
     }
 }
 
