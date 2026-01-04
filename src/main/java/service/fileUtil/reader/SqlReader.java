@@ -23,6 +23,16 @@ public class SqlReader {
         }
     }
 
+    public void convertEncoding(Path inputPath, Charset fromCharset, Charset toCharset) throws IOException {
+        if (Files.isDirectory(inputPath)) {
+            convertDirectoryEncoding(inputPath, fromCharset, toCharset);
+        } else if (Files.isRegularFile(inputPath)) {
+            convertFileEncoding(inputPath, fromCharset, toCharset);
+        } else {
+            throw new IllegalArgumentException("Invalid path: " + inputPath);
+        }
+    }
+
     private void processDirectory(Path directory) throws IOException {
         System.out.println("Processing directory: " + directory.toAbsolutePath());
         try (Stream<Path> paths = Files.walk(directory)) {
@@ -38,6 +48,23 @@ public class SqlReader {
         }
     }
 
+    private void convertDirectoryEncoding(Path directory, Charset fromCharset, Charset toCharset) throws IOException {
+        System.out.println("Converting directory: " + directory.toAbsolutePath());
+        System.out.println("From: " + fromCharset.name() + " -> To: " + toCharset.name());
+
+        try (Stream<Path> paths = Files.walk(directory)) {
+            paths.filter(Files::isRegularFile)
+                    .filter(p -> p.getFileName().toString().endsWith(".sql"))
+                    .forEach(path -> {
+                        try {
+                            convertFileEncoding(path, fromCharset, toCharset);
+                        } catch (IOException e) {
+                            System.err.println("Failed to convert file: " + path + " - " + e.getMessage());
+                        }
+                    });
+        }
+    }
+
     private void processFile(Path file) throws IOException {
         String filePath = file.toAbsolutePath().toString();
         String fileName = file.getFileName().toString();
@@ -48,5 +75,18 @@ public class SqlReader {
         System.out.println("Name: " + fileName);
         System.out.println("Content length: " + content.length() + " characters");
         System.out.println("========================================");
+    }
+
+    private void convertFileEncoding(Path file, Charset fromCharset, Charset toCharset) throws IOException {
+        String fileName = file.getFileName().toString();
+
+        // 원본 파일 읽기 (fromCharset으로)
+        String content = Files.readString(file, fromCharset);
+
+        // 변환된 내용을 같은 파일에 쓰기 (toCharset으로)
+        Files.writeString(file, content, toCharset);
+
+        System.out.println("✓ Converted: " + fileName +
+                         " (" + fromCharset.name() + " -> " + toCharset.name() + ")");
     }
 }
