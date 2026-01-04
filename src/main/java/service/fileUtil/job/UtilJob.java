@@ -1,6 +1,6 @@
 package service.fileUtil.job;
 
-import service.fileUtil.converter.ConvertEncoding;
+import service.fileUtil.processor.ConvertEncoding;
 import service.fileUtil.reader.SqlReader;
 
 import java.io.BufferedReader;
