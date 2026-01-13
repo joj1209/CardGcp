@@ -18,4 +18,12 @@ public class ConvertStep {
                 .map(line -> line.replaceAll("\\s+$", ""))
                 .collect(java.util.stream.Collectors.joining("\n"));
     }
+
+    public String convertTabsToSpaces(String content, int spaceCount) {
+        if (content == null) return null;
+        // 탭을 지정된 개수의 스페이스로 변환
+        char[] spaces = new char[spaceCount];
+        java.util.Arrays.fill(spaces, ' ');
+        return content.replace("\t", new String(spaces));
+    }
 }

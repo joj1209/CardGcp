@@ -1,7 +1,7 @@
 # FileUtil 패키지 소스 코드 분석
 
 ## 1. 개요
-`service.fileUtil` 패키지는 파일 처리 유틸리티 기능을 제공하는 모듈입니다. 주요 기능으로는 파일 인코딩 변환(EUC-KR <-> UTF-8), 줄 끝 공백 제거 등이 있으며, 대용량 파일 및 디렉토리 단위의 일괄 처리를 지원합니다.
+`service.fileUtil` 패키지는 파일 처리 유틸리티 기능을 제공하는 모듈입니다. 주요 기능으로는 파일 인코딩 변환(EUC-KR <-> UTF-8), 줄 끝 공백 제거, 탭을 스페이스로 변환(2칸/4칸) 등이 있으며, 대용량 파일 및 디렉토리 단위의 일괄 처리를 지원합니다.
 
 ## 2. 패키지 구조
 - **job**: 실행 진입점 및 파이프라인 제어 (`UtilJob`)
@@ -62,8 +62,10 @@ public class UtilJob {
         System.out.println("1. EUC-KR -> UTF-8");
         System.out.println("2. UTF-8 -> EUC-KR");
         System.out.println("3. Remove trailing spaces (UTF-8 -> UTF-8)");
+        System.out.println("4. Convert tabs to 2 spaces (UTF-8 -> UTF-8)");
+        System.out.println("5. Convert tabs to 4 spaces (UTF-8 -> UTF-8)");
         System.out.println("========================================");
-        System.out.print("Enter your choice (0-3): ");
+        System.out.print("Enter your choice (0-5): ");
 
         // 사용자 입력 대기
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -89,9 +91,21 @@ public class UtilJob {
                 // processor::removeTrailingSpaces 메서드 참조를 전달하여 공백 제거 수행
                 processConversion(inputPath, outputPath, SqlReader.UTF8, SqlReader.UTF8, processor::removeTrailingSpaces);
                 break;
+            case "4": // 탭을 2개 스페이스로 변환
+                System.out.println("\n>>> Converting tabs to 2 spaces (UTF-8 -> UTF-8)\n");
+                // 람다식으로 spaceCount 매개변수를 2로 전달
+                processConversion(inputPath, outputPath, SqlReader.UTF8, SqlReader.UTF8,
+                    content -> processor.convertTabsToSpaces(content, 2));
+                break;
+            case "5": // 탭을 4개 스페이스로 변환
+                System.out.println("\n>>> Converting tabs to 4 spaces (UTF-8 -> UTF-8)\n");
+                // 람다식으로 spaceCount 매개변수를 4로 전달
+                processConversion(inputPath, outputPath, SqlReader.UTF8, SqlReader.UTF8,
+                    content -> processor.convertTabsToSpaces(content, 4));
+                break;
             default:
                 System.err.println("Invalid choice: " + choice);
-                System.err.println("Please select 0, 1, 2, or 3");
+                System.err.println("Please select 0, 1, 2, 3, 4, or 5");
         }
 
         System.out.println("\n------- UtilJob finished -------");
@@ -175,6 +189,15 @@ public class ConvertStep {
         return java.util.Arrays.stream(content.split("\n", -1))
                 .map(line -> line.replaceAll("\\s+$", ""))
                 .collect(java.util.stream.Collectors.joining("\n"));
+    }
+
+    // 탭을 스페이스로 변환하는 메서드
+    public String convertTabsToSpaces(String content, int spaceCount) {
+        if (content == null) return null;
+        // 탭을 지정된 개수의 스페이스로 변환
+        char[] spaces = new char[spaceCount];
+        java.util.Arrays.fill(spaces, ' ');
+        return content.replace("\t", new String(spaces));
     }
 }
 ```

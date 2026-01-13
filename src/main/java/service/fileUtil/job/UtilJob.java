@@ -40,8 +40,10 @@ public class UtilJob {
         System.out.println("1. EUC-KR -> UTF-8");
         System.out.println("2. UTF-8 -> EUC-KR");
         System.out.println("3. Remove trailing spaces (UTF-8 -> UTF-8)");
+        System.out.println("4. Convert tabs to 2 spaces (UTF-8 -> UTF-8)");
+        System.out.println("5. Convert tabs to 4 spaces (UTF-8 -> UTF-8)");
         System.out.println("========================================");
-        System.out.print("Enter your choice (0-3): ");
+        System.out.print("Enter your choice (0-5): ");
 
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         String choice = br.readLine().trim();
@@ -63,9 +65,19 @@ public class UtilJob {
                 System.out.println("\n>>> Removing trailing spaces (UTF-8 -> UTF-8)\n");
                 processConversion(inputPath, outputPath, SqlReader.UTF8, SqlReader.UTF8, processor::removeTrailingSpaces);
                 break;
+            case "4":
+                System.out.println("\n>>> Converting tabs to 2 spaces (UTF-8 -> UTF-8)\n");
+                processConversion(inputPath, outputPath, SqlReader.UTF8, SqlReader.UTF8,
+                    content -> processor.convertTabsToSpaces(content, 2));
+                break;
+            case "5":
+                System.out.println("\n>>> Converting tabs to 4 spaces (UTF-8 -> UTF-8)\n");
+                processConversion(inputPath, outputPath, SqlReader.UTF8, SqlReader.UTF8,
+                    content -> processor.convertTabsToSpaces(content, 4));
+                break;
             default:
                 System.err.println("Invalid choice: " + choice);
-                System.err.println("Please select 0, 1, 2, or 3");
+                System.err.println("Please select 0, 1, 2, 3, 4, or 5");
         }
 
         System.out.println("\n------- UtilJob finished -------");
