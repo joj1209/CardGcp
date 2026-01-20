@@ -3,6 +3,7 @@ package service.queryParser.job;
 import service.queryParser.processor.FileParserProcessor;
 import service.queryParser.reader.SqlReader;
 import service.queryParser.writer.CsvWriter;
+import service.queryParser.writer.SourceTableCsvWriter;
 import service.queryParser.writer.TextWriter;
 import service.queryParser.vo.TablesInfo;
 
@@ -98,6 +99,11 @@ public class AppJob {
     private final CsvWriter csvWriter;
 
     /**
+     * 소스테이블 중심으로 프로그램 매핑 정보를 저장하는 SourceTableCsvWriter 인스턴스입니다.
+     */
+    private final SourceTableCsvWriter sourceTableCsvWriter;
+
+    /**
      * AppJob 인스턴스를 생성합니다.
      *
      * <p>각 단계(Reader, Processor, Writer)를 외부에서 주입받아 유연하게 구성할 수 있습니다.
@@ -108,13 +114,16 @@ public class AppJob {
      * @param processor SQL을 파싱하는 FileParserProcessor 인스턴스 (null 불가)
      * @param writer 결과를 출력하는 TextWriter 인스턴스 (null 불가)
      * @param csvWriter CSV로 결과를 출력하는 CsvWriter 인스턴스 (null 불가)
+     * @param sourceTableCsvWriter 소스테이블 매핑 정보를 출력하는 SourceTableCsvWriter 인스턴스 (null 불가)
      */
-    public AppJob(Path inputDir, SqlReader reader, FileParserProcessor processor, TextWriter writer, CsvWriter csvWriter) {
+    public AppJob(Path inputDir, SqlReader reader, FileParserProcessor processor, TextWriter writer,
+                  CsvWriter csvWriter, SourceTableCsvWriter sourceTableCsvWriter) {
         this.inputDir = inputDir;
         this.reader = reader;
         this.processor = processor;
         this.writer = writer;
         this.csvWriter = csvWriter;
+        this.sourceTableCsvWriter = sourceTableCsvWriter;
     }
 
     /**
@@ -127,6 +136,7 @@ public class AppJob {
      *   <li><b>출력 디렉토리</b>: D:\11. Project\11. DB\BigQuery_out</li>
      *   <li><b>출력 문자셋</b>: UTF-8</li>
      *   <li><b>CSV 파일</b>: D:\11. Project\11. DB\BigQuery_out\summary.csv</li>
+     *   <li><b>소스테이블 매핑 CSV 파일</b>: D:\11. Project\11. DB\BigQuery_out\source_table_mapping.csv</li>
      *   <li><b>파싱 옵션</b>: 기본 설정 (FileParserProcessor.withDefaults())</li>
      * </ul>
      *
@@ -140,7 +150,9 @@ public class AppJob {
         TextWriter writer = new TextWriter(DEFAULT_OUTPUT_PATH, Charset.forName("UTF-8"));
         Path csvPath = DEFAULT_OUTPUT_PATH.resolve("summary.csv");
         CsvWriter csvWriter = new CsvWriter(csvPath, Charset.forName("UTF-8"));
-        return new AppJob(DEFAULT_INPUT_PATH, reader, processor, writer, csvWriter);
+        Path sourceTableCsvPath = DEFAULT_OUTPUT_PATH.resolve("source_table_mapping.csv");
+        SourceTableCsvWriter sourceTableCsvWriter = new SourceTableCsvWriter(sourceTableCsvPath, Charset.forName("UTF-8"));
+        return new AppJob(DEFAULT_INPUT_PATH, reader, processor, writer, csvWriter, sourceTableCsvWriter);
     }
 
     /**
@@ -172,7 +184,6 @@ public class AppJob {
         System.out.println("Starting SQL file processing...");
         System.out.println("Input directory: " + inputDir);
         System.out.println("========================================");
-        ;
 
 
         reader.run(inputDir, this::handleFile);
@@ -186,6 +197,17 @@ public class AppJob {
             System.out.println("========================================");
         } catch (IOException ex) {
             System.err.println("Failed to save CSV file: " + ex.getMessage());
+        }
+
+        // 소스테이블 매핑 CSV 파일 저장
+        try {
+            sourceTableCsvWriter.write();
+            System.out.println("========================================");
+            System.out.println("Source table mapping CSV file saved successfully.");
+            System.out.println("Total source tables: " + sourceTableCsvWriter.getTableCount());
+            System.out.println("========================================");
+        } catch (IOException ex) {
+            System.err.println("Failed to save source table mapping CSV file: " + ex.getMessage());
         }
     }
 
@@ -222,6 +244,9 @@ public class AppJob {
             // CSV 레코드 추가
             String fileName = file.getFileName().toString();
             csvWriter.addRecord(fileName, info);
+
+            // 소스테이블 매핑 CSV 레코드 추가
+            sourceTableCsvWriter.addRecord(fileName, info);
         } catch (IOException ex) {
             System.err.println("File processing failed: " + file + " - " + ex.getMessage());
         }

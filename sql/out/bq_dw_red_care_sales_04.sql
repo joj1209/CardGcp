@@ -1,11 +1,11 @@
--- 1. ½ºÅ©¸³ÆÃ ½ÃÀÛÀ» ¾Ë¸®´Â BEGIN
+-- 1. ìŠ¤í¬ë¦½íŒ… ì‹œìž‘ì„ ì•Œë¦¬ëŠ” BEGIN
 BEGIN
 /*********************************************************/
 /* PGM ID : bq_dw_red_care_sales_04.sql                        */
 /* TBL_ID : DW.RED_CARE_SALES                              */
 /*********************************************************/
     -- ===================================
-    -- 1. º¯¼ö ¼±¾ð (DECLARE)
+    -- 1. ë³€ìˆ˜ ì„ ì–¸ (DECLARE)
     -- ===================================
     DECLARE vs_pgm_id STRING DEFAULT {vs_pgm_id};
     DECLARE vs_tbl_id STRING DEFAULT {vs_tbl_id};
@@ -15,14 +15,14 @@ BEGIN
     DECLARE vs_record_count INT64;
 
     -- ===================================
-    -- 2. º¯¼ö¿¡ °ª ÇÒ´ç (SET ¶Ç´Â SELECT INTO)
+    -- 2. ë³€ìˆ˜ì— ê°’ í• ë‹¹ (SET ë˜ëŠ” SELECT INTO)
     -- ===================================
 BEGIN
-        -- SET ¹®À» »ç¿ëÇÏ¿© º¯¼ö¿¡ Á÷Á¢ °ªÀ» ÇÒ´ç
+        -- SET ë¬¸ì„ ì‚¬ìš©í•˜ì—¬ ë³€ìˆ˜ì— ì§ì ‘ ê°’ì„ í• ë‹¹
         SET vs_target_date = DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY);
 
-        -- SELECT °á°ú¸¦ º¯¼ö¿¡ ÇÒ´ç (SET »ç¿ë)
-        -- (½ÇÁ¦ Å×ÀÌºí ÀÌ¸§À¸·Î º¯°æ ÇÊ¿ä)
+        -- SELECT ê²°ê³¼ë¥¼ ë³€ìˆ˜ì— í• ë‹¹ (SET ì‚¬ìš©)
+        -- (ì‹¤ì œ í…Œì´ë¸” ì´ë¦„ìœ¼ë¡œ ë³€ê²½ í•„ìš”)
         SET vs_record_count = (
             SELECT
                 COUNT(1)
@@ -35,18 +35,18 @@ BEGIN
 select vs_record_count as record_count;
 
 -- ===================================
--- 4. ¸¶Áö¸· °á°ú ¹ÝÈ¯
+-- 4. ë§ˆì§€ë§‰ ê²°ê³¼ ë°˜í™˜
 -- ===================================
--- ½ºÅ©¸³Æ®ÀÇ ÃÖÁ¾ °á°ú¸¦ Ãâ·ÂÇÕ´Ï´Ù.
+-- ìŠ¤í¬ë¦½íŠ¸ì˜ ìµœì¢… ê²°ê³¼ë¥¼ ì¶œë ¥í•©ë‹ˆë‹¤.
 SELECT CURRENT_TIMESTAMP() AS script_end_time;
 END;
 
 BEGIN
-        -- SET ¹®À» »ç¿ëÇÏ¿© º¯¼ö¿¡ Á÷Á¢ °ªÀ» ÇÒ´ç
+        -- SET ë¬¸ì„ ì‚¬ìš©í•˜ì—¬ ë³€ìˆ˜ì— ì§ì ‘ ê°’ì„ í• ë‹¹
         SET vs_target_date = DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY);
 
-        -- SELECT °á°ú¸¦ º¯¼ö¿¡ ÇÒ´ç (SET »ç¿ë)
-        -- (½ÇÁ¦ Å×ÀÌºí ÀÌ¸§À¸·Î º¯°æ ÇÊ¿ä)
+        -- SELECT ê²°ê³¼ë¥¼ ë³€ìˆ˜ì— í• ë‹¹ (SET ì‚¬ìš©)
+        -- (ì‹¤ì œ í…Œì´ë¸” ì´ë¦„ìœ¼ë¡œ ë³€ê²½ í•„ìš”)
         SET vs_record_count = (
             SELECT
                 COUNT(1)
@@ -59,10 +59,10 @@ BEGIN
 select vs_record_count as record_count;
 
 -- ===================================
--- 4. ¸¶Áö¸· °á°ú ¹ÝÈ¯
+-- 4. ë§ˆì§€ë§‰ ê²°ê³¼ ë°˜í™˜
 -- ===================================
--- ½ºÅ©¸³Æ®ÀÇ ÃÖÁ¾ °á°ú¸¦ Ãâ·ÂÇÕ´Ï´Ù.
+-- ìŠ¤í¬ë¦½íŠ¸ì˜ ìµœì¢… ê²°ê³¼ë¥¼ ì¶œë ¥í•©ë‹ˆë‹¤.
 SELECT CURRENT_TIMESTAMP() AS script_end_time;
 END;
 
-END; -- ½ºÅ©¸³ÆÃ Á¾·á
+END; -- ìŠ¤í¬ë¦½íŒ… ì¢…ë£Œ
