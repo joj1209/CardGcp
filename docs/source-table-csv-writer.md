@@ -16,11 +16,11 @@
 ### 2. CSV 출력 형식
 
 ```csv
-Source Table,Program,Target Tables
-DW.`회사목록`,bq_dw_red_care_sales_01.sql,BM.`회사`; BM.`공통코드`
-DW.`회사목록`,bq_dw_red_care_sales_02.sql,BM.`회사`
-DW.`코드목록`,bq_dw_red_care_sales_01.sql,BM.`공통코드`
-DW.`사무실`,bq_dw_red_care_sales_01.sql,BM.`회사`
+Program,Source Table,Target Tables
+bq_dw_red_care_sales_01.sql,DW.`회사목록`,BM.`회사`; BM.`공통코드`
+bq_dw_red_care_sales_02.sql,DW.`회사목록`,BM.`회사`
+bq_dw_red_care_sales_01.sql,DW.`코드목록`,BM.`공통코드`
+bq_dw_red_care_sales_01.sql,DW.`사무실`,BM.`회사`
 ```
 
 ### 3. 정렬 기능
@@ -87,7 +87,7 @@ System.out.println("Total source tables: " + writer.getTableCount());
    - 파일명, 소스테이블들, 타겟테이블들
 
 2. **SourceTableCsvWriter**: 소스테이블 중심 CSV (source_table_mapping.csv)
-   - 소스테이블, 프로그램, 타겟테이블들
+   - 프로그램, 소스테이블, 타겟테이블들
 
 ```java
 public static AppJob createDefault() {
@@ -126,12 +126,12 @@ WHERE ...;
 
 ### 출력 (source_table_mapping.csv)
 
-| Source Table | Program | Target Tables |
-|-------------|---------|---------------|
-| DW.`회사목록` | bq_dw_red_care_sales_01.sql | BM.`공통코드`; BM.`회사` |
-| DW.`회사목록` | bq_dw_red_care_sales_02.sql | BM.`회사` |
-| DW.`코드목록` | bq_dw_red_care_sales_01.sql | BM.`공통코드` |
-| DW.`사무실` | bq_dw_red_care_sales_01.sql | BM.`회사` |
+| Program | Source Table | Target Tables |
+|---------|-------------|---------------|
+| bq_dw_red_care_sales_01.sql | DW.`회사목록` | BM.`공통코드`; BM.`회사` |
+| bq_dw_red_care_sales_01.sql | DW.`코드목록` | BM.`공통코드` |
+| bq_dw_red_care_sales_01.sql | DW.`사무실` | BM.`회사` |
+| bq_dw_red_care_sales_02.sql | DW.`회사목록` | BM.`회사` |
 
 ## 데이터 흐름
 

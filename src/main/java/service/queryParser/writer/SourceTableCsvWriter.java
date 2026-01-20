@@ -72,7 +72,7 @@ public class SourceTableCsvWriter {
             }
 
             // 헤더 작성
-            writer.write("Source Table,Program,Target Tables");
+            writer.write("Program,Source Table,Target Tables");
             writer.newLine();
 
             // 각 소스테이블에 대한 매핑 정보 작성
@@ -101,9 +101,9 @@ public class SourceTableCsvWriter {
 
             String targetTablesStr = joinTables(targetTables);
 
-            // CSV 행 작성: 소스테이블, 프로그램, 타겟테이블들
-            writer.write(escapeCsv(sourceTable) + "," +
-                        escapeCsv(program) + "," +
+            // CSV 행 작성: 프로그램, 소스테이블, 타겟테이블들
+            writer.write(escapeCsv(program) + "," +
+                        escapeCsv(sourceTable) + "," +
                         escapeCsv(targetTablesStr));
             writer.newLine();
         }
