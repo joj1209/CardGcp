@@ -4,6 +4,7 @@ import service.queryParser.processor.FileParserProcessor;
 import service.queryParser.reader.SqlReader;
 import service.queryParser.writer.CsvWriter;
 import service.queryParser.writer.SourceTableCsvWriter;
+import service.queryParser.writer.TargetTableCsvWriter;
 import service.queryParser.writer.TextWriter;
 import service.queryParser.vo.TablesInfo;
 
@@ -23,15 +24,17 @@ public class AppJob {
     private final TextWriter writer;
     private final CsvWriter csvWriter;
     private final SourceTableCsvWriter sourceTableCsvWriter;
+    private final TargetTableCsvWriter targetTableCsvWriter;
 
     public AppJob(Path inputDir, SqlReader reader, FileParserProcessor processor, TextWriter writer,
-                  CsvWriter csvWriter, SourceTableCsvWriter sourceTableCsvWriter) {
+                  CsvWriter csvWriter, SourceTableCsvWriter sourceTableCsvWriter, TargetTableCsvWriter targetTableCsvWriter) {
         this.inputDir = inputDir;
         this.reader = reader;
         this.processor = processor;
         this.writer = writer;
         this.csvWriter = csvWriter;
         this.sourceTableCsvWriter = sourceTableCsvWriter;
+        this.targetTableCsvWriter = targetTableCsvWriter;
     }
 
     public static AppJob createDefault() {
@@ -42,7 +45,9 @@ public class AppJob {
         CsvWriter csvWriter = new CsvWriter(csvPath, Charset.forName("UTF-8"));
         Path sourceTableCsvPath = DEFAULT_OUTPUT_PATH.resolve("source_table_mapping.csv");
         SourceTableCsvWriter sourceTableCsvWriter = new SourceTableCsvWriter(sourceTableCsvPath, Charset.forName("UTF-8"));
-        return new AppJob(DEFAULT_INPUT_PATH, reader, processor, writer, csvWriter, sourceTableCsvWriter);
+        Path targetTableCsvPath = DEFAULT_OUTPUT_PATH.resolve("target_table_mapping.csv");
+        TargetTableCsvWriter targetTableCsvWriter = new TargetTableCsvWriter(targetTableCsvPath, Charset.forName("UTF-8"));
+        return new AppJob(DEFAULT_INPUT_PATH, reader, processor, writer, csvWriter, sourceTableCsvWriter, targetTableCsvWriter);
     }
 
     public void stepRead() {
@@ -72,6 +77,16 @@ public class AppJob {
         } catch (IOException ex) {
             System.err.println("Failed to save source table mapping CSV file: " + ex.getMessage());
         }
+
+        try {
+            targetTableCsvWriter.write();
+            System.out.println("========================================");
+            System.out.println("Target table mapping CSV file saved successfully.");
+            System.out.println("Total target tables: " + targetTableCsvWriter.getTableCount());
+            System.out.println("========================================");
+        } catch (IOException ex) {
+            System.err.println("Failed to save target table mapping CSV file: " + ex.getMessage());
+        }
     }
 
     private void handleFile(Path file, String sql) {
@@ -82,6 +97,7 @@ public class AppJob {
             String fileName = file.getFileName().toString();
             csvWriter.addRecord(fileName, info);
             sourceTableCsvWriter.addRecord(fileName, info);
+            targetTableCsvWriter.addRecord(fileName, info);
         } catch (IOException ex) {
             System.err.println("File processing failed: " + file + " - " + ex.getMessage());
         }
