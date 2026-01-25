@@ -1,0 +1,6 @@
+﻿APPLICATION_NM5,GROUP_NM4,JOBNAME_NM3,CMDLINE,DAYSCAL,DESCRIPTION,INCOND,MONTH,TIMEFROM,TIMEUNTIL
+ADMMON01,ADM05D,DEUMCSQB_106월가맹점동종업종이용실적01,ksh /apprun/src/dm/com/dmrun.sh MCSQB_106월가맹점종종업종이용실적01 %%PRELASTMN DM.월가맹점동종업종이용실적,MONTHSTART,[DW.국내회원국내매출전표매입기본] 월가맹점동종업종이용실적_생성,DEUMCSGS_DATE_CHECK_M05D-OK **** AND,ALL Y,="0000",=">"
+ADMMON01,ADM06D,DEUEBMQQDMTB공통코드D01,ksh /apprun/src/dm/com/dmrun.sh MCSBM_001DMTB공통코드01 %%PRELASTMN DM.공통코드,ALLDays,[DM.공통코드] 공통코드_생성,DEUMCSGS_DATE_CHECK_M06D-OK **** AND,ALL Y,="0000",=">"
+ADMMON01,ADM07D,DEUMCSQD_030월법인사업장정보01,ksh /apprun/src/dm/com/dmrun.sh MCSQD_030월법인사업장정보01 %%PRELASTMN DM.월법인사업장정보,MONTHSTART,[DM.월법인사업장정보] 월법인사업장정보_생성,DEUMCSGS_DATE_CHECK_M07D-OK **** AND,ALL Y,="0000",=">"
+ADMMON01,ADM08D,DEUWCSBV_가수금내역01,ksh /apprun/src/dm/com/dmrun.sh WCSBV_가수금내역01 %%PRELASTMN DW.가수금내역,MONTHSTART,[DW.가수금내역] 가수금내역_생성,DEUMCSGS_DATE_CHECK_M08D-OK **** AND,ALL Y,="0000",=">"
+ADMMON01,ADM09D,DEUMCU_DSS_월PLCC회원상세분석집계_UNLOAD01,ksh /apprun/src/dm/com/dmrun.sh MCU_DSS_월PLCC회원상세분석집계_UNLOAD01 %%PRELASTMN DM.월PLCC회원상세분석집계_UNLOAD,MONTHSTART,[월PLCC회원상세분석집계_UNLOAD] 월PLCC회원상세분석집계_UNLOAD_생성,DEUMCSGS_DATE_CHECK_M09D-OK **** AND,ALL Y,="0000",=">"

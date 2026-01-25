@@ -7,7 +7,7 @@ import java.util.*;
 public class CsvConverter {
 
     private static final String INPUT_CSV = "csv/CmJob.csv";
-    private static final String OUTPUT_CSV = "output_result.csv";
+    private static final String OUTPUT_CSV = "output_result2.csv";
 
     public static void main(String[] args) {
         CsvConverter converter = new CsvConverter();
@@ -141,11 +141,18 @@ public class CsvConverter {
                 List<String> values = new ArrayList<>();
                 for (String column : allColumns) {
                     String value = row.getOrDefault(column, "");
-                    // 쉼표나 따옴표가 포함된 경우 따옴표로 감싸기
-                    if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
-                        value = "\"" + value.replace("\"", "\"\"") + "\"";
+
+                    // TIMEFROM, TIMEUNTIL은 텍스트 형식으로 강제 (0000이 0으로 변환되는 것 방지)
+                    if (("TIMEFROM".equals(column) || "TIMEUNTIL".equals(column)) && !value.isEmpty()) {
+                        value = "=\"" + value + "\"";
+                        values.add(value);
+                    } else {
+                        // 쉼표나 따옴표가 포함된 경우 따옴표로 감싸기
+                        if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
+                            value = "\"" + value.replace("\"", "\"\"") + "\"";
+                        }
+                        values.add(value);
                     }
-                    values.add(value);
                 }
                 bw.write(String.join(",", values));
                 bw.newLine();
