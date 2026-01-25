@@ -6,21 +6,47 @@ import java.util.*;
 
 public class CsvConverter {
 
-    private static final String INPUT_CSV = "csv/CmJob.csv";
-    private static final String OUTPUT_CSV = "output_result2.csv";
+    private static final String DEFAULT_INPUT_CSV = "csv/CmJob.csv";
+    private static final String DEFAULT_OUTPUT_CSV = "output_result.csv";
+
+    private final String inputCsv;
+    private final String outputCsv;
+
+    public CsvConverter(String inputCsv, String outputCsv) {
+        this.inputCsv = inputCsv;
+        this.outputCsv = outputCsv;
+    }
 
     public static void main(String[] args) {
-        CsvConverter converter = new CsvConverter();
+        String inputCsv = DEFAULT_INPUT_CSV;
+        String outputCsv = DEFAULT_OUTPUT_CSV;
+
+        // 아규먼트 처리
+        if (args.length >= 1) {
+            inputCsv = args[0];
+        }
+        if (args.length >= 2) {
+            outputCsv = args[1];
+        }
+
+        // 사용법 출력
+        if (args.length == 0) {
+            System.out.println("사용법: java service.CsvConverter [입력CSV경로] [출력CSV경로]");
+            System.out.println("기본값 사용: 입력=" + inputCsv + ", 출력=" + outputCsv);
+            System.out.println();
+        }
+
+        CsvConverter converter = new CsvConverter(inputCsv, outputCsv);
         converter.convert();
     }
 
     public void convert() {
         try {
-            List<String[]> rawData = readCsv(INPUT_CSV);
+            List<String[]> rawData = readCsv(inputCsv);
             List<Map<String, String>> pivotedData = pivotData(rawData);
-            writeCsv(OUTPUT_CSV, pivotedData);
+            writeCsv(outputCsv, pivotedData);
 
-            System.out.println("CSV 변환 완료: " + OUTPUT_CSV);
+            System.out.println("CSV 변환 완료: " + outputCsv);
             System.out.println("총 " + pivotedData.size() + "개의 행이 생성되었습니다.");
 
         } catch (Exception e) {
