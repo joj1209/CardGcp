@@ -7,7 +7,7 @@ import java.util.*;
 public class CsvConverter {
 
     private static final String INPUT_CSV = "csv/CmJob.csv";
-    private static final String OUTPUT_CSV = "output.csv";
+    private static final String OUTPUT_CSV = "output_result.csv";
 
     public static void main(String[] args) {
         CsvConverter converter = new CsvConverter();
@@ -113,14 +113,18 @@ public class CsvConverter {
             return;
         }
 
-        // 6개 고정 컬럼 정의 (요구사항: 헤더 포함 6개 열)
+        // 10개 고정 컬럼 정의 (기본 3개 + CTRM_항목명 7개)
         List<String> allColumns = new ArrayList<>();
         allColumns.add("APPLICATION_NM5");
         allColumns.add("GROUP_NM4");
         allColumns.add("JOBNAME_NM3");
         allColumns.add("CMDLINE");
+        allColumns.add("DAYSCAL");
         allColumns.add("DESCRIPTION");
         allColumns.add("INCOND");
+        allColumns.add("MONTH");
+        allColumns.add("TIMEFROM");
+        allColumns.add("TIMEUNTIL");
 
         try (BufferedWriter bw = new BufferedWriter(
                 new OutputStreamWriter(new FileOutputStream(filePath), StandardCharsets.UTF_8))) {

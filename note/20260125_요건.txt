@@ -5,3 +5,12 @@
 3.헤더를 포함하여 6개의 열이 출력되야 합니다.
 4.구현 클래스명은 CsvConverter 입니다.
 5.service/CsvConverter.java 파일에 구현합니다.
+
+~/csv/CmJob.csv 에서  "CTRM_항목명" 값은 아래 처럼 7개인데, 구현은 CMDLINE,DESCRIPTION,INCOND 3개만 되어 있어서 아래 7개를 모두 열로 구현하시오
+CMDLINE
+DAYSCAL
+DESCRIPTION
+INCOND
+MONTH
+TIMEFROM
+TIMEUNTIL
