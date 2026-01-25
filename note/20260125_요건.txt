@@ -1,0 +1,7 @@
+
+요건입니다.
+1.아래 경로의 csv 파일을 읽어와서 "CTRM_항목명" 컬럼의 값을 열명으로 변환하고, 그 열의 값은 "CTRM_DATA" 항목입니다.
+2.CSV 경로는 ~/csv/CmJob.csv 입니다.
+3.헤더를 포함하여 6개의 열이 출력되야 합니다.
+4.구현 클래스명은 CsvConverter 입니다.
+5.service/CsvConverter.java 파일에 구현합니다.
