@@ -28,7 +28,7 @@ public class SqlRunWriter {
         Path bqPath = outputDir.resolve(baseName + "_bq.sql");
         writeFile(bqPath, bqContent);
 
-        String oracleContent = bqContent.replace("`", "");
+        String oracleContent = generateOracleSql(info);
         Path oraPath = outputDir.resolve(baseName + "_oracle.sql");
         writeFile(oraPath, oracleContent);
 
@@ -56,7 +56,7 @@ public class SqlRunWriter {
         int index = 1;
         for (String table : sources) {
             sb.append("/*-- ").append(index++).append(") ").append(table).append(" --*/\n");
-            sb.append(generateTableQueries(table));
+            sb.append(generateTableQueries(table, true));
             sb.append("\n");
         }
 
@@ -67,17 +67,46 @@ public class SqlRunWriter {
         index = 1;
         for (String table : targets) {
             sb.append("/*-- ").append(index++).append(") ").append(table).append(" --*/\n");
-            sb.append(generateTableQueries(table));
+            sb.append(generateTableQueries(table, true));
             sb.append("\n");
         }
 
         return sb.toString();
     }
 
-    private String generateTableQueries(String fullTableName) {
+    private String generateOracleSql(TablesInfo info) {
         StringBuilder sb = new StringBuilder();
 
-        String tableRef = addBackticksIfNeeded(fullTableName);
+        Set<String> sources = info.getSortedSources();
+        Set<String> targets = info.getSortedTargets();
+
+        sb.append("/*--------------------*/\n");
+        sb.append("/*-- 소스테이블 : ").append(sources.size()).append("개 --*/\n");
+        sb.append("/*--------------------*/\n\n");
+
+        int index = 1;
+        for (String table : sources) {
+            sb.append("/*-- ").append(index++).append(") ").append(table).append(" --*/\n");
+            sb.append(generateTableQueries(table, false));
+            sb.append("\n");
+        }
+
+        sb.append("/*--------------------*/\n");
+        sb.append("/*-- 타겟테이블 : ").append(targets.size()).append("개 --*/\n");
+        sb.append("/*--------------------*/\n\n");
+
+        index = 1;
+        for (String table : targets) {
+            sb.append("/*-- ").append(index++).append(") ").append(table).append(" --*/\n");
+            sb.append(generateTableQueries(table, false));
+            sb.append("\n");
+        }
+
+        return sb.toString();
+    }
+
+    private String generateTableQueries(String fullTableName, boolean isBigQuery) {
+        StringBuilder sb = new StringBuilder();
 
         // 테이블명에서 실제 테이블명 부분 추출 (스키마 제외)
         String tableName = fullTableName;
@@ -87,17 +116,36 @@ public class SqlRunWriter {
         // 백틱 제거하여 순수 테이블명 확인
         tableName = tableName.replace("`", "");
 
-        // 테이블명에 "일"이 포함되지 않으면 "기준일자" 사용
-        String dateColumnName = tableName.contains("일") ? "파티션일자" : "기준일자";
+        // 날짜 컬럼명 결정
+        String dateColumnName;
+        if (isBigQuery) {
+            // BigQuery: 일 포함 여부로 결정
+            dateColumnName = tableName.contains("일") ? "파티션일자" : "기준일자";
+        } else {
+            // Oracle: 일 포함시 파티션일자, 월 포함시 기준년월, 나머지는 기준일자
+            if (tableName.contains("일")) {
+                dateColumnName = "파티션일자";
+            } else if (tableName.contains("월")) {
+                dateColumnName = "기준년월";
+            } else {
+                dateColumnName = "기준일자";
+            }
+        }
+
+        // 테이블 참조명 (BigQuery는 백틱 추가, Oracle은 백틱 제거)
+        String tableRef = isBigQuery ? addBackticksIfNeeded(fullTableName) : fullTableName.replace("`", "");
+
+        // 날짜 컬럼 참조 (BigQuery는 백틱 추가, Oracle은 백틱 제거)
+        String dateColumnRef = isBigQuery ? "`" + dateColumnName + "`" : dateColumnName;
 
         sb.append("select * from ").append(tableRef).append(";\n");
         sb.append("select * from ").append(tableRef)
-                .append(" where `").append(dateColumnName).append("` = parse_date('%Y%m%d', '").append(baseDate).append("');\n");
+                .append(" where ").append(dateColumnRef).append(" = parse_date('%Y%m%d', '").append(baseDate).append("');\n");
         sb.append("select count(1) from ").append(tableRef).append(";\n");
-        sb.append("select `").append(dateColumnName).append("`,count(1) from ").append(tableRef)
-                .append(" group by `").append(dateColumnName).append("` order by `").append(dateColumnName).append("` desc;\n");
+        sb.append("select ").append(dateColumnRef).append(",count(1) from ").append(tableRef)
+                .append(" group by ").append(dateColumnRef).append(" order by ").append(dateColumnRef).append(" desc;\n");
         sb.append("select count(1) from ").append(tableRef)
-                .append(" where `").append(dateColumnName).append("` = parse_date('%Y%m%d', '").append(baseDate).append("');\n");
+                .append(" where ").append(dateColumnRef).append(" = parse_date('%Y%m%d', '").append(baseDate).append("');\n");
 
         return sb.toString();
     }
