@@ -39,8 +39,12 @@ AppRunJob
 
 ### 생성되는 파일
 각 입력 SQL 파일당 2개의 출력 파일 생성:
-- `bq_<파일명>.sql` - BigQuery 버전 (백틱 포함)
-- `ora_<파일명>.sql` - Oracle 버전 (백틱 제거)
+- `<파일명>_bq.sql` - BigQuery 버전 (백틱 포함)
+- `<파일명>_oracle.sql` - Oracle 버전 (백틱 제거)
+
+예시: `bq_dw_red_care_sales_01.sql` 입력 시
+- `bq_dw_red_care_sales_01_bq.sql` 생성
+- `bq_dw_red_care_sales_01_oracle.sql` 생성
 
 ### SQL 구조
 
@@ -104,7 +108,7 @@ BEGIN
 END;
 ```
 
-### 출력 파일 (bq_파일명.sql)
+### 출력 파일 (bq_dw_red_care_sales_01_bq.sql)
 ```sql
 /*--------------------*/
 /*-- 소스테이블 : 2개 --*/

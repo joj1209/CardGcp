@@ -25,14 +25,14 @@ public class SqlRunWriter {
         String baseName = extractBaseName(relativeFileName);
 
         String bqContent = generateBigQuerySql(info);
-        Path bqPath = outputDir.resolve("bq_" + baseName + ".sql");
+        Path bqPath = outputDir.resolve(baseName + "_bq.sql");
         writeFile(bqPath, bqContent);
 
         String oracleContent = bqContent.replace("`", "");
-        Path oraPath = outputDir.resolve("ora_" + baseName + ".sql");
+        Path oraPath = outputDir.resolve(baseName + "_oracle.sql");
         writeFile(oraPath, oracleContent);
 
-        System.out.println("✓ Generated SQL files: bq_" + baseName + ".sql, ora_" + baseName + ".sql");
+        System.out.println("✓ Generated SQL files: " + baseName + "_bq.sql, " + baseName + "_oracle.sql");
     }
 
     private String extractBaseName(String fileName) {
