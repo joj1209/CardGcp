@@ -79,14 +79,25 @@ public class SqlRunWriter {
 
         String tableRef = addBackticksIfNeeded(fullTableName);
 
+        // 테이블명에서 실제 테이블명 부분 추출 (스키마 제외)
+        String tableName = fullTableName;
+        if (fullTableName.contains(".")) {
+            tableName = fullTableName.substring(fullTableName.lastIndexOf(".") + 1);
+        }
+        // 백틱 제거하여 순수 테이블명 확인
+        tableName = tableName.replace("`", "");
+
+        // 테이블명에 "일"이 포함되지 않으면 "기준일자" 사용
+        String dateColumnName = tableName.contains("일") ? "파티션일자" : "기준일자";
+
         sb.append("select * from ").append(tableRef).append(";\n");
         sb.append("select * from ").append(tableRef)
-                .append(" where `파티션일자` = parse_date('%Y%m%d', '").append(baseDate).append("');\n");
+                .append(" where `").append(dateColumnName).append("` = parse_date('%Y%m%d', '").append(baseDate).append("');\n");
         sb.append("select count(1) from ").append(tableRef).append(";\n");
-        sb.append("select `파티션일자`,count(1) from ").append(tableRef)
-                .append(" group by `파티션일자` order by `파티션일자` desc;\n");
+        sb.append("select `").append(dateColumnName).append("`,count(1) from ").append(tableRef)
+                .append(" group by `").append(dateColumnName).append("` order by `").append(dateColumnName).append("` desc;\n");
         sb.append("select count(1) from ").append(tableRef)
-                .append(" where `파티션일자` = parse_date('%Y%m%d', '").append(baseDate).append("');\n");
+                .append(" where `").append(dateColumnName).append("` = parse_date('%Y%m%d', '").append(baseDate).append("');\n");
 
         return sb.toString();
     }
