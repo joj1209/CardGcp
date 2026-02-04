@@ -18,10 +18,12 @@
 ### 3. ✅ 소스/타겟 테이블별 5개 쿼리 생성
 각 테이블마다 다음 5개 쿼리 자동 생성:
 1. `select * from 테이블명;` - 전체 조회
-2. `select * from 테이블명 where 파티션일자 = parse_date('%Y%m%d', '기준일자');` - 기준일자 조회
+2. `select * from 테이블명 where 날짜컬럼 = parse_date('%Y%m%d', '기준일자');` - 기준일자 조회
 3. `select count(1) from 테이블명;` - 전체 카운트
-4. `select 파티션일자,count(1) from 테이블명 group by 파티션일자 order by 파티션일자 desc;` - 파티션별 카운트
-5. `select count(1) from 테이블명 where 파티션일자 = parse_date('%Y%m%d', '기준일자');` - 기준일자 카운트
+4. `select 날짜컬럼,count(1) from 테이블명 group by 날짜컬럼 order by 날짜컬럼 desc;` - 파티션별 카운트
+5. `select count(1) from 테이블명 where 날짜컬럼 = parse_date('%Y%m%d', '기준일자');` - 기준일자 카운트
+
+**날짜 컬럼은 테이블명과 DBMS 버전에 따라 자동 선택됩니다.**
 
 ### 4. ✅ 기준일자 아규먼트 처리
 - 아규먼트로 기준일자 입력 가능
@@ -29,7 +31,23 @@
 - 형식: `YYYYMMDD`
 - 사용법: `java service.queryParser.job.AppRunJob 20260301`
 
-### 5. ✅ 백틱 처리 규칙
+### 5. ✅ 날짜 컬럼 자동 선택 규칙
+
+#### BigQuery 버전
+- **테이블명에 "일" 포함**: `파티션일자` 컬럼 사용
+  - 예: `일별매출현황`, `카드발급일별`, `일별거래내역`
+- **테이블명에 "일" 미포함**: `기준일자` 컬럼 사용
+  - 예: `월별매출현황`, `월서비스1`, `서비스현황`, `RED_CARE_SALES`
+
+#### Oracle 버전
+- **테이블명에 "일" 포함**: `파티션일자` 컬럼 사용
+  - 예: `일별매출현황`, `카드발급일별`, `일별거래내역`
+- **테이블명에 "월" 포함 (일 미포함)**: `기준년월` 컬럼 사용 ✨
+  - 예: `월별매출현황`, `월서비스1`, `월거래내역`
+- **테이블명에 "일", "월" 모두 미포함**: `기준일자` 컬럼 사용
+  - 예: `서비스현황`, `RED_CARE_SALES`, `마스터정보`
+
+### 6. ✅ 백틱 처리 규칙
 #### BigQuery 버전
 - 한글 테이블명: 자동으로 백틱 추가 (예: `DW.`서비스1``)
 - 영문 테이블명: 백틱 없음 (예: `DW.RED_CARE_SALES`)
@@ -72,6 +90,7 @@ END;
 ```
 
 ### 출력 파일 (bq_dw_red_care_sales_01_bq.sql)
+BigQuery 버전 예시 - 영문 테이블은 "일" 미포함이므로 `기준일자` 사용:
 ```sql
 /*--------------------*/
 /*-- 소스테이블 : 3개 --*/
@@ -79,30 +98,62 @@ END;
 
 /*-- 1) DW.RED_CARE_SALES --*/
 select * from DW.RED_CARE_SALES;
-select * from DW.RED_CARE_SALES where `파티션일자` = parse_date('%Y%m%d', '20260224');
+select * from DW.RED_CARE_SALES where `기준일자` = parse_date('%Y%m%d', '20260224');
 select count(1) from DW.RED_CARE_SALES;
-select `파티션일자`,count(1) from DW.RED_CARE_SALES group by `파티션일자` order by `파티션일자` desc;
-select count(1) from DW.RED_CARE_SALES where `파티션일자` = parse_date('%Y%m%d', '20260224');
+select `기준일자`,count(1) from DW.RED_CARE_SALES group by `기준일자` order by `기준일자` desc;
+select count(1) from DW.RED_CARE_SALES where `기준일자` = parse_date('%Y%m%d', '20260224');
 
-/*-- 2) DW.`마스터가입자1` --*/
-(5개 쿼리)
+/*-- 2) DW.`월서비스멤버1` --*/
+select * from DW.`월서비스멤버1`;
+select * from DW.`월서비스멤버1` where `기준일자` = parse_date('%Y%m%d', '20260224');
+(나머지 3개 쿼리)
 
-/*-- 3) DW.`서비스멤버1` --*/
-(5개 쿼리)
+/*-- 3) DW.`일별거래내역` --*/
+select * from DW.`일별거래내역`;
+select * from DW.`일별거래내역` where `파티션일자` = parse_date('%Y%m%d', '20260224');
+(나머지 3개 쿼리)
 
 /*--------------------*/
 /*-- 타겟테이블 : 2개 --*/
 /*--------------------*/
 
-/*-- 1) DM.`마스터가입자1` --*/
-(5개 쿼리)
+/*-- 1) DM.`월매출현황` --*/
+select * from DM.`월매출현황` where `기준일자` = parse_date('%Y%m%d', '20260224');
+(나머지 쿼리)
 
-/*-- 2) DM.`서비스1` --*/
-(5개 쿼리)
+/*-- 2) DM.`일별매출현황` --*/
+select * from DM.`일별매출현황` where `파티션일자` = parse_date('%Y%m%d', '20260224');
+(나머지 쿼리)
 ```
 
 ### 출력 파일 (bq_dw_red_care_sales_01_oracle.sql)
-- 위와 동일하지만 모든 백틱 제거됨
+Oracle 버전 예시 - 월별 테이블은 `기준년월` 사용:
+```sql
+/*--------------------*/
+/*-- 소스테이블 : 3개 --*/
+/*--------------------*/
+
+/*-- 1) DW.RED_CARE_SALES --*/
+select * from DW.RED_CARE_SALES;
+select * from DW.RED_CARE_SALES where 기준일자 = parse_date('%Y%m%d', '20260224');
+select count(1) from DW.RED_CARE_SALES;
+select 기준일자,count(1) from DW.RED_CARE_SALES group by 기준일자 order by 기준일자 desc;
+select count(1) from DW.RED_CARE_SALES where 기준일자 = parse_date('%Y%m%d', '20260224');
+
+/*-- 2) DW.월서비스멤버1 --*/
+select * from DW.월서비스멤버1;
+select * from DW.월서비스멤버1 where 기준년월 = parse_date('%Y%m%d', '20260224');
+(나머지 3개 쿼리 - 모두 기준년월 사용)
+
+/*-- 3) DW.일별거래내역 --*/
+select * from DW.일별거래내역;
+select * from DW.일별거래내역 where 파티션일자 = parse_date('%Y%m%d', '20260224');
+(나머지 3개 쿼리 - 모두 파티션일자 사용)
+```
+
+**주요 차이점:**
+- BigQuery: 백틱 포함, 월별 테이블도 `기준일자` 사용
+- Oracle: 백틱 제거, 월별 테이블은 `기준년월` 사용 ✨
 
 ## 기술적 특징
 
@@ -125,7 +176,29 @@ private boolean containsKorean(String text) {
 - 소스/타겟 테이블 각각 독립적으로 정렬
 - 가독성 높은 출력
 
-### 3. 유연한 쿼리 템플릿
+### 3. 날짜 컬럼 자동 선택
+- 테이블명 분석을 통한 지능형 날짜 컬럼 선택
+- BigQuery와 Oracle 버전별 다른 규칙 적용
+- "일", "월" 키워드 기반 자동 판단
+
+**날짜 컬럼 선택 로직:**
+```java
+if (isBigQuery) {
+    // BigQuery: 일 포함 여부로 결정
+    dateColumnName = tableName.contains("일") ? "파티션일자" : "기준일자";
+} else {
+    // Oracle: 일/월 포함 여부로 3단계 결정
+    if (tableName.contains("일")) {
+        dateColumnName = "파티션일자";
+    } else if (tableName.contains("월")) {
+        dateColumnName = "기준년월";  // ✨ Oracle 전용
+    } else {
+        dateColumnName = "기준일자";
+    }
+}
+```
+
+### 4. BigQuery/Oracle 버전 분리 생성
 - 기준일자 동적 적용
 - 파티션 컬럼명: `파티션일자` (고정)
 - 필요시 쿼리 템플릿 확장 가능
@@ -169,6 +242,63 @@ docs: Update AppRunJob documentation with execution examples
 - 기술적 특징 섹션 추가 (한글 감지, 테이블 정렬, 파일명 처리)
 - 실제 테스트 결과 반영
 - DEFAULT_INPUT_PATH를 원래 경로로 복원
+```
+
+### 3차 커밋 (606161a)
+```
+refactor: 출력 파일명 형식 변경 (bq_파일명.sql → 파일명_bq.sql)
+
+- SqlRunWriter: 파일명 생성 로직 변경
+  - 변경 전: bq_파일명.sql, ora_파일명.sql
+  - 변경 후: 파일명_bq.sql, 파일명_oracle.sql
+- 예시: bq_dw_red_care_sales_01.sql → bq_dw_red_care_sales_01_bq.sql, bq_dw_red_care_sales_01_oracle.sql
+- 관련 문서 업데이트 (AppRunJob.md, AppRunJob-implementation-summary.md)
+- 실행 테스트 완료: test_sample_bq.sql, test_sample_oracle.sql 생성 확인
+```
+
+### 4차 커밋 (ca9721b)
+```
+feat: 테이블명 기반 날짜 컬럼 자동 선택 기능 추가
+
+- SqlRunWriter: 테이블명에 '일' 포함 여부로 날짜 컬럼 결정
+  - '일' 포함 (예: 일별매출현황, 카드발급일별) → 파티션일자 사용
+  - '일' 미포함 (예: 월별매출현황, 서비스현황) → 기준일자 사용
+- 날짜 컬럼 규칙 문서화 (AppRunJob.md)
+- 일별/월별 테이블 테스트 파일 추가 (test_date_column.sql)
+- 실행 테스트 완료
+  - 일별거래내역 → 파티션일자 ✓
+  - 월별거래내역 → 기준일자 ✓
+  - 서비스마스터 → 기준일자 ✓
+  - 카드발급일별 → 파티션일자 ✓
+```
+
+### 5차 커밋 (89cc176)
+```
+feat: Oracle 버전에 월별 테이블 기준년월 컬럼 지원 추가
+
+- SqlRunWriter: BigQuery와 Oracle 버전을 별도로 생성하도록 리팩토링
+  - generateBigQuerySql(): BigQuery 전용 SQL 생성
+  - generateOracleSql(): Oracle 전용 SQL 생성
+  - generateTableQueries(isBigQuery): 버전별 날짜 컬럼 처리
+  
+- Oracle 버전 날짜 컬럼 규칙
+  - '일' 포함 (예: 일별매출현황) → 파티션일자
+  - '월' 포함, '일' 미포함 (예: 월별매출현황) → 기준년월 ✨
+  - '일', '월' 모두 미포함 (예: 서비스현황) → 기준일자
+  
+- BigQuery 버전은 기존 규칙 유지
+  - '일' 포함 → 파티션일자
+  - '일' 미포함 → 기준일자
+  
+- 문서 업데이트 (AppRunJob.md)
+  - BigQuery와 Oracle의 날짜 컬럼 규칙 분리 설명
+  - 백틱 처리 규칙에 날짜 컬럼 차이 명시
+  
+- 테스트 결과
+  - BigQuery: 월별거래내역 → 기준일자 ✓
+  - Oracle: 월별거래내역 → 기준년월 ✓
+  - Oracle: 일별거래내역 → 파티션일자 ✓
+  - Oracle: 서비스마스터 → 기준일자 ✓
 ```
 
 ## 테스트 결과
