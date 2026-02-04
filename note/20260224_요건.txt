@@ -1,0 +1,57 @@
+요건입니다.
+1.AppJob 클래스와 구조가 동일하며 출력파일만 형태가 다른 AppRunJob 클래스를 구현합니다.
+2.프로그램 파일 1개당 빅쿼리 버전과 오라클 버전의 파일 2개를 만들며 차이점은 오라클버전은 백틱만 없고 나머지는 동일합니다.
+3.소스테이블과 타겟테이블을 추출하는데 아래와 같은 sql을 추출합니다. (빅쿼리 버전)
+-샘플 파일 : bq_dw_red_care_sales_01.sql
+
+-소스테이블 (테이블 1개당 5개의 sql)  --> 이 문장은 넣지 마시오
+
+/*--------------------*/
+/*-- 소스테이블 : 3개 --*/
+/*--------------------*/
+
+/*-- 1) DW.RED_CARE_SALES --*/
+select * from DW.RED_CARE_SALES;
+select * from DW.RED_CARE_SALES where `파티션일자` = parse_date('%Y%m%d', '20260224');
+select count(1) from DW.RED_CARE_SALES;
+select `파티션일자`,count(1) from DW.RED_CARE_SALES group by `파티션일자` order by `파티션일자` desc;
+select count(1) from DW.RED_CARE_SALES where `파티션일자` = parse_date('%Y%m%d', '20260224');
+
+/*-- 2) DW.서비스멤버1 --*/
+select * from DW.`서비스멤버1`;
+select * from DW.`서비스멤버1` where `파티션일자` = parse_date('%Y%m%d', '20260224');
+select count(1) from DW.`서비스멤버1`;
+select `파티션일자`,count(1) from DW.`서비스멤버1` group by `파티션일자` order by `파티션일자` desc;
+select count(1) from DW.`서비스멤버1` where `파티션일자` = parse_date('%Y%m%d', '20260224');
+
+/*-- 3) DW.마스터가입자1 --*/
+select * from DW.`마스터가입자1`;
+select * from DW.`마스터가입자1` where `파티션일자` = parse_date('%Y%m%d', '20260224');
+select count(1) from DW.`마스터가입자1`;
+select `파티션일자`,count(1) from DW.`마스터가입자1` group by `파티션일자` order by `파티션일자` desc;
+select count(1) from DW.`마스터가입자1` where `파티션일자` = parse_date('%Y%m%d', '20260224');
+
+
+-타겟테이블 (테이블 1개당 5개의 sql)  --> 이 문장은 넣지 마시오
+
+/*--------------------*/
+/*-- 타겟테이블 : 2개 --*/
+/*--------------------*/
+
+/*-- 1) DM.서비스1 --*/
+select * from DM.`서비스1`;
+select * from DM.`서비스1` where `파티션일자` = parse_date('%Y%m%d', '20260224');
+select count(1) from DM.`서비스1`;
+select `파티션일자`,count(1) from DM.`서비스1` group by `파티션일자` order by `파티션일자` desc;
+select count(1) from DM.`서비스1` where `파티션일자` = parse_date('%Y%m%d', '20260224');
+
+/*-- 2) DM.마스터가입자1 --*/
+select * from DM.`마스터가입자1`;
+select * from DM.`마스터가입자1` where `파티션일자` = parse_date('%Y%m%d', '20260224');
+select count(1) from DM.`마스터가입자1`;
+select `파티션일자`,count(1) from DM.`마스터가입자1` group by `파티션일자` order by `파티션일자` desc;
+select count(1) from DM.`마스터가입자1` where `파티션일자` = parse_date('%Y%m%d', '20260224');
+
+4.AppJob과 동일한 프로세스에서 출력파일만 다르게 구현합니다.
+
+5.기준일자 '20260224' 는 AppRunJob에서 아규먼트로 받을수 있게 설정하고 디폴트로 '20260224' 입니다.
