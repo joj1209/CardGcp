@@ -181,3 +181,50 @@ select count(1) from DM.`서비스1` where `파티션일자` = parse_date('%Y%m%
 3. 출력 디렉토리가 없으면 자동 생성됨
 4. 동일 파일명이 있으면 덮어쓰기됨
 
+## 실행 예시
+
+### 콘솔 출력
+```
+Using default base date: 20260224
+========================================
+Starting SQL file processing for Run Job...
+Input directory: D:\11. Project\11. DB\BigQuery
+========================================
+✓ Generated SQL files: bq_sample001.sql, ora_sample001.sql
+✓ Generated SQL files: bq_sample002.sql, ora_sample002.sql
+========================================
+All SQL files processed successfully.
+========================================
+```
+
+### 기준일자 파라미터 사용
+```bash
+java service.queryParser.job.AppRunJob 20260301
+```
+
+출력:
+```
+Using base date from argument: 20260301
+========================================
+Starting SQL file processing for Run Job...
+...
+```
+
+## 기술적 특징
+
+### 한글 테이블명 자동 감지
+- Unicode 블록을 사용한 한글 감지
+- HANGUL_SYLLABLES, HANGUL_COMPATIBILITY_JAMO, HANGUL_JAMO 블록 체크
+- 한글이 포함된 경우에만 백틱 추가
+
+### 테이블 정렬
+- TreeSet을 사용한 자동 알파벳 순 정렬
+- 소스/타겟 테이블 각각 정렬
+- 가독성 높은 출력
+
+### 파일 이름 처리
+- 상대 경로 유지
+- 하위 디렉토리 구조 보존
+- .sql 확장자 자동 제거 및 재생성
+
+
