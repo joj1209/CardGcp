@@ -141,14 +141,19 @@ public class SqlRunWriter {
         // 날짜 컬럼 참조 (BigQuery는 백틱 추가, Oracle은 백틱 제거)
         String dateColumnRef = isBigQuery ? "`" + dateColumnName + "`" : dateColumnName;
 
+        // 날짜 조건 값 (BigQuery vs Oracle)
+        String dateValueExpr = isBigQuery
+                ? "parse_date('%Y%m%d', '" + baseDate + "')"
+                : "'" + baseDate + "'";
+
         sb.append("select * from ").append(tableRef).append(";\n");
         sb.append("select * from ").append(tableRef)
-                .append(" where ").append(dateColumnRef).append(" = parse_date('%Y%m%d', '").append(baseDate).append("');\n");
+                .append(" where ").append(dateColumnRef).append(" = ").append(dateValueExpr).append(";\n");
         sb.append("select count(1) from ").append(tableRef).append(";\n");
         sb.append("select ").append(dateColumnRef).append(",count(1) from ").append(tableRef)
                 .append(" group by ").append(dateColumnRef).append(" order by ").append(dateColumnRef).append(" desc;\n");
         sb.append("select count(1) from ").append(tableRef)
-                .append(" where ").append(dateColumnRef).append(" = parse_date('%Y%m%d', '").append(baseDate).append("');\n");
+                .append(" where ").append(dateColumnRef).append(" = ").append(dateValueExpr).append(";\n");
 
         return sb.toString();
     }
