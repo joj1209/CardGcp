@@ -22,24 +22,27 @@ public class SqlRunWriter {
     }
 
     public void writeSqlFiles(String relativeFileName, TablesInfo info) throws IOException {
-        String baseName = extractBaseName(relativeFileName);
+        String relativeNoExt = normalizeRelativeNoExt(relativeFileName);
 
         String bqContent = generateBigQuerySql(info);
-        Path bqPath = outputDir.resolve(baseName + "_bq.sql");
+        Path bqPath = outputDir.resolve(relativeNoExt + "_bq.sql");
         writeFile(bqPath, bqContent);
 
         String oracleContent = generateOracleSql(info);
-        Path oraPath = outputDir.resolve(baseName + "_oracle.sql");
+        Path oraPath = outputDir.resolve(relativeNoExt + "_oracle.sql");
         writeFile(oraPath, oracleContent);
 
-        System.out.println("✓ Generated SQL files: " + baseName + "_bq.sql, " + baseName + "_oracle.sql");
+        System.out.println("✓ Generated SQL files: " + relativeNoExt + "_bq.sql, " + relativeNoExt + "_oracle.sql");
     }
 
-    private String extractBaseName(String fileName) {
-        String name = fileName.replace("\\", "/");
-        if (name.contains("/")) {
-            name = name.substring(name.lastIndexOf("/") + 1);
-        }
+    /**
+     * 입력 SQL 파일의 상대 경로를 그대로 유지하되, 출력 파일명 구성을 위해 확장자(.sql)만 제거합니다.
+     * 예) "qa/bq_dw_red_care_sales_08" -> "qa/bq_dw_red_care_sales_08"
+     * 예) "qa/bq_dw_red_care_sales_08.sql" -> "qa/bq_dw_red_care_sales_08"
+     */
+    private String normalizeRelativeNoExt(String relativeFileName) {
+        String name = relativeFileName.replace("\\", "/");
+        // AppRunJob에서 이미 .sql 제거 후 전달하지만, 안전하게 중복 제거
         return name.replaceAll("\\.sql$", "");
     }
 
@@ -188,4 +191,3 @@ public class SqlRunWriter {
         }
     }
 }
-

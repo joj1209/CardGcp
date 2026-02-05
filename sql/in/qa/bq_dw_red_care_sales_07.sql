@@ -51,8 +51,8 @@ BEGIN
 
 select vs_record_count as record_count;
 
-insert into DM.`일서비스2` select * from DW.`일서비스멤버2`;
-insert into DM.`일마스터2` select * from DW.`일마스터가입자2`;
+insert into DM.`서비스3` select * from DW.`서비스멤버3`;
+insert into DM.`마스터3` select * from DW.`마스터가입자3`;
 
 -- ===================================
 -- 4. 마지막 결과 반환

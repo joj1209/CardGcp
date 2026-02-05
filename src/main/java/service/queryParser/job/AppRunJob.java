@@ -12,8 +12,8 @@ import java.nio.file.Paths;
 
 public class AppRunJob {
 
-    private static final Path DEFAULT_INPUT_PATH = Paths.get("D:", "11. Project", "11. DB", "BigQuery");
-    private static final Path DEFAULT_OUTPUT_PATH = Paths.get("D:", "11. Project", "11. DB", "BigQuery_out");
+    private static final Path DEFAULT_INPUT_PATH = Paths.get("sql", "in");
+    private static final Path DEFAULT_OUTPUT_PATH = Paths.get("sql", "out");
     private static final String DEFAULT_BASE_DATE = "20260224";
 
     private final Path inputDir;
@@ -86,4 +86,3 @@ public class AppRunJob {
         job.stepRead();
     }
 }
-

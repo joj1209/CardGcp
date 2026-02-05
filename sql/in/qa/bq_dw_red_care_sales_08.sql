@@ -1,8 +1,15 @@
 -- 1. 스크립팅 시작을 알리는 BEGIN
 BEGIN
+/*********************************************************/
+/* PGM ID : bq_dw_red_care_sales_04.sql                        */
+/* TBL_ID : DW.RED_CARE_SALES                              */
+/*********************************************************/
     -- ===================================
     -- 1. 변수 선언 (DECLARE)
     -- ===================================
+    DECLARE vs_pgm_id STRING DEFAULT {vs_pgm_id};
+    DECLARE vs_tbl_id STRING DEFAULT {vs_tbl_id};
+    DECLARE vs_job_dt STRING DEFAULT {vs_job_dt};
     DECLARE vs_target_date DATE DEFAULT DATE('2025-12-10');
     DECLARE vs_min_amount NUMERIC DEFAULT 1000.00;
     DECLARE vs_record_count INT64;
@@ -51,8 +58,8 @@ BEGIN
 
 select vs_record_count as record_count;
 
-insert into DM.`일서비스2` select * from DW.`일서비스멤버2`;
-insert into DM.`일마스터2` select * from DW.`일마스터가입자2`;
+insert into DM.`서비스4` select * from DW.`서비스멤버4`;
+insert into DM.`마스터4` select * from DW.`마스터가입자4`;
 
 -- ===================================
 -- 4. 마지막 결과 반환

@@ -32,7 +32,7 @@ AppRunJob
 
 #### SqlRunWriter (신규)
 - 추출된 테이블 정보를 기반으로 실행 SQL 생성
-- BigQuery 버전 (bq_*.sql)과 Oracle 버전 (ora_*.sql) 생성
+- BigQuery 버전 (`*_bq.sql`)과 Oracle 버전 (`*_oracle.sql`) 생성
 - 각 테이블당 5개의 쿼리 자동 생성
 
 ## 출력 형식
@@ -45,6 +45,17 @@ AppRunJob
 예시: `bq_dw_red_care_sales_01.sql` 입력 시
 - `bq_dw_red_care_sales_01_bq.sql` 생성
 - `bq_dw_red_care_sales_01_oracle.sql` 생성
+
+### 하위 디렉토리 구조 보존
+입력 디렉토리 아래의 **하위 폴더 구조를 그대로 유지**한 채로 출력 디렉토리에 생성됩니다.
+
+예)
+- Input: `BigQuery/qa/bq_dw_red_care_sales_08.sql`
+- Output:
+  - `BigQuery_out/qa/bq_dw_red_care_sales_08_bq.sql`
+  - `BigQuery_out/qa/bq_dw_red_care_sales_08_oracle.sql`
+
+(동일 파일명이 다른 폴더에 있어도, 폴더 구조가 유지되므로 충돌이 줄어듭니다.)
 
 ### SQL 구조
 
@@ -219,8 +230,8 @@ Using default base date: 20260224
 Starting SQL file processing for Run Job...
 Input directory: D:\11. Project\11. DB\BigQuery
 ========================================
-✓ Generated SQL files: bq_sample001.sql, ora_sample001.sql
-✓ Generated SQL files: bq_sample002.sql, ora_sample002.sql
+✓ Generated SQL files: qa/bq_sample001_bq.sql, qa/bq_sample001_oracle.sql
+✓ Generated SQL files: bq_sample002_bq.sql, bq_sample002_oracle.sql
 ========================================
 All SQL files processed successfully.
 ========================================
@@ -255,5 +266,3 @@ Starting SQL file processing for Run Job...
 - 상대 경로 유지
 - 하위 디렉토리 구조 보존
 - .sql 확장자 자동 제거 및 재생성
-
-

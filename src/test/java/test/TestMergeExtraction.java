@@ -40,7 +40,7 @@ public class TestMergeExtraction {
                      "   WHERE N1.회사ID = N2.회사ID;\n" +
                      "END;";
 
-        TablesInfo info2 = extractor.extractTables(sql2);
+        TablesInfo info2 = parser.extractTables(sql2);
 
         System.out.println("\n\n=== 테스트 2: Oracle 조인 문법 ===");
         System.out.println("\n[Target Tables]");
