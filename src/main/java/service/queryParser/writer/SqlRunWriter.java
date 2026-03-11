@@ -7,18 +7,21 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Set;
+import java.nio.file.Paths;
+import java.util.*;
 
 public class SqlRunWriter {
 
     private final Path outputDir;
     private final Charset charset;
     private final String baseDate;
+    private final Map<String, List<String>> pkColumnsByTable;
 
     public SqlRunWriter(Path outputDir, Charset charset, String baseDate) {
         this.outputDir = outputDir;
         this.charset = charset;
         this.baseDate = baseDate;
+        this.pkColumnsByTable = loadPkColumns(Paths.get("sql", "in", "table_pk.list"));
     }
 
     public void writeSqlFiles(String relativeFileName, TablesInfo info) throws IOException {
@@ -155,7 +158,85 @@ public class SqlRunWriter {
         sb.append("select count(1) from ").append(tableRef)
                 .append(" where ").append(dateColumnRef).append(" = ").append(dateValueExpr).append(";\n");
 
+        // PK 중복 확인 쿼리 (table_pk.list에 정의된 테이블만)
+        appendPkDuplicateCheckQuery(sb, fullTableName, tableRef);
+
         return sb.toString();
+    }
+
+    private void appendPkDuplicateCheckQuery(StringBuilder sb, String fullTableName, String tableRef) {
+        Optional<List<String>> pkColumnsOpt = findPkColumns(fullTableName);
+        if (pkColumnsOpt.isEmpty()) {
+            return;
+        }
+
+        List<String> pkColumns = pkColumnsOpt.get();
+        if (pkColumns.isEmpty()) {
+            return;
+        }
+
+        String selectCols = String.join(",", pkColumns);
+        String groupByCols = selectCols;
+
+        sb.append("select ").append(selectCols).append(",count(1) from ").append(tableRef)
+                .append(" group by ").append(groupByCols)
+                .append(" having count(1) > 1;\n");
+    }
+
+    private Optional<List<String>> findPkColumns(String fullTableName) {
+        // BigQuery용 백틱 등 문자열 차이를 흡수해서 매칭
+        String normalized = normalizeTableKey(fullTableName);
+        List<String> cols = pkColumnsByTable.get(normalized);
+        if (cols == null) {
+            return Optional.empty();
+        }
+        return Optional.of(cols);
+    }
+
+    private String normalizeTableKey(String fullTableName) {
+        // 1) 백틱 제거 2) 트림 3) 대소문자 통일(스키마/테이블은 통상 대문자)
+        return fullTableName.replace("`", "").trim().toUpperCase(Locale.ROOT);
+    }
+
+    private Map<String, List<String>> loadPkColumns(Path listPath) {
+        Map<String, List<String>> result = new HashMap<>();
+
+        if (!Files.exists(listPath)) {
+            return result;
+        }
+
+        try {
+            List<String> lines = Files.readAllLines(listPath, charset);
+            for (String raw : lines) {
+                String line = raw == null ? "" : raw.trim();
+                if (line.isEmpty() || line.startsWith("#")) {
+                    continue;
+                }
+
+                String[] parts = line.split("\\s*,\\s*");
+                if (parts.length < 2) {
+                    continue;
+                }
+
+                String table = normalizeTableKey(parts[0]);
+                List<String> cols = new ArrayList<>();
+                for (int i = 1; i < parts.length; i++) {
+                    String col = parts[i].trim();
+                    if (!col.isEmpty()) {
+                        cols.add(col);
+                    }
+                }
+
+                if (!cols.isEmpty()) {
+                    result.put(table, Collections.unmodifiableList(cols));
+                }
+            }
+        } catch (IOException e) {
+            // writer 단독 변경 요구사항 준수 + 기존 동작 유지: 로딩 실패 시 PK쿼리만 생략
+            return new HashMap<>();
+        }
+
+        return result;
     }
 
     private String addBackticksIfNeeded(String tableName) {
