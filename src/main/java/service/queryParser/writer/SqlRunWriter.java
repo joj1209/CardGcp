@@ -138,11 +138,14 @@ public class SqlRunWriter {
             }
         }
 
+        // 컬럼명에 백틱 추가 (BigQuery일 때만)
+        dateColumnName = isBigQuery ? addBackticksIfNeeded(dateColumnName) : dateColumnName;
+
         // 테이블 참조명 (BigQuery는 백틱 추가, Oracle은 백틱 제거)
         String tableRef = isBigQuery ? addBackticksIfNeeded(fullTableName) : fullTableName.replace("`", "");
 
         // 날짜 컬럼 참조 (BigQuery는 백틱 추가, Oracle은 백틱 제거)
-        String dateColumnRef = isBigQuery ? "`" + dateColumnName + "`" : dateColumnName;
+        String dateColumnRef = isBigQuery ? addBackticksIfNeeded(dateColumnName) : dateColumnName;
 
         // 날짜 조건 값 (BigQuery vs Oracle)
         String dateValueExpr = isBigQuery
@@ -159,12 +162,12 @@ public class SqlRunWriter {
                 .append(" where ").append(dateColumnRef).append(" = ").append(dateValueExpr).append(";\n");
 
         // PK 중복 확인 쿼리 (table_pk.list에 정의된 테이블만)
-        appendPkDuplicateCheckQuery(sb, fullTableName, tableRef);
+        appendPkDuplicateCheckQuery(sb, fullTableName, tableRef, isBigQuery);
 
         return sb.toString();
     }
 
-    private void appendPkDuplicateCheckQuery(StringBuilder sb, String fullTableName, String tableRef) {
+    private void appendPkDuplicateCheckQuery(StringBuilder sb, String fullTableName, String tableRef, boolean isBigQuery) {
         Optional<List<String>> pkColumnsOpt = findPkColumns(fullTableName);
         if (pkColumnsOpt.isEmpty()) {
             return;
@@ -175,11 +178,16 @@ public class SqlRunWriter {
             return;
         }
 
-        String selectCols = String.join(",", pkColumns);
-        String groupByCols = selectCols;
+        // PK 컬럼명에 백틱 추가 (BigQuery일 때만)
+        List<String> wrappedPkColumns = new ArrayList<>();
+        for (String col : pkColumns) {
+            wrappedPkColumns.add(isBigQuery ? addBackticksIfNeeded(col) : col);
+        }
+
+        String selectCols = String.join(",", wrappedPkColumns);
 
         sb.append("select ").append(selectCols).append(",count(1) from ").append(tableRef)
-                .append(" group by ").append(groupByCols)
+                .append(" group by ").append(selectCols)
                 .append(" having count(1) > 1;\n");
     }
 
@@ -239,24 +247,11 @@ public class SqlRunWriter {
         return result;
     }
 
-    private String addBackticksIfNeeded(String tableName) {
-        if (tableName.contains("`")) {
-            return tableName;
+    private String addBackticksIfNeeded(String text) {
+        if (text.contains("`")) {
+            return text;
         }
-
-        String[] parts = tableName.split("\\.");
-        if (parts.length != 2) {
-            return tableName;
-        }
-
-        String schema = parts[0];
-        String table = parts[1];
-
-        if (containsKorean(table)) {
-            return schema + ".`" + table + "`";
-        } else {
-            return tableName;
-        }
+        return containsKorean(text) ? "`" + text + "`" : text;
     }
 
     private boolean containsKorean(String text) {
