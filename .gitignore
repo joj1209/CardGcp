@@ -60,3 +60,7 @@ build/
 
 # Generated outputs
 sql/out/
+
+# generated/list files
+sql/in/table.list
+
